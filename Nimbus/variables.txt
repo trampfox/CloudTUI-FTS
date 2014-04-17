@@ -1,0 +1,16 @@
+//VARIABLES
+NetworkIn
+NetworkOut
+CPUUtilization
+DiskReadOps
+DiskWriteOps
+DiskReadBytes
+DiskWriteBytes
+###
+//ACTIONS
+CLONE
+TERMINATE
+RUN
+***
+
+
