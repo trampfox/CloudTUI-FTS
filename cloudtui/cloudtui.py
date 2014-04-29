@@ -38,7 +38,7 @@ class CloudTUI:
 
         while True:
             try:
-                # user input 
+                # user input
                 print("Please make a choice: ")
                 choice = input()
                 platform_selected = platform_available.items()[choice - 1]
