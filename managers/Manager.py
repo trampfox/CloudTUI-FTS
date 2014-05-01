@@ -1,6 +1,6 @@
 __author__ = 'Davide Monfrecola'
 
-import IManager
+from imanager import IManager
 
 class Manager(IManager):
     """Common base class for all cloud platform manager (implements IManager interface)"""

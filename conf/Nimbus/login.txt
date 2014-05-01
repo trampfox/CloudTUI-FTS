@@ -1,0 +1,50 @@
+[nimbus]
+###
+# Absolute path where you installed Nimbus Cloud Client (you must specify it in order to use CloudTUI-advance)
+###
+path = /Users/trampfox/Projects/tesi/nimbus-cloud-client-022
+
+###
+# Nimbus EC2 Query Frontend Port (default value: 8444. Please see readme for more information)
+###
+port = 8444
+
+###
+# Your canonical ID (default: common)
+###
+canonical_id = common
+
+###
+# If you use Futuregrid Nimbus, you have to insert your SSH key name here (more information in the readme)
+###
+ssh_key_id = trampfox
+
+[monitor]
+###
+# Hostname of monitoring server (this is not required in order to use Cloud-TUI-advance, but without it you cannot use
+# monitoring functions)
+###
+host = test.monitor.com
+
+###
+# Port of the monitoring server (it work's together with HOSTMON parameter, so read instructions above that variable for
+# more information)
+###
+port = 0
+
+# 0 for no-monitoring, 1 for enable monitoring service of CSM (monitoring can work only if you have specified a monitoring
+# host together with his port in the two previous variables)
+enabled = 0
+
+[options]
+###
+# 0 if you don't need to validate you Nimbus certificate, 1 otherwise (see readme for more information)
+###
+validate_certs = 0
+
+###
+# Here you can specify which terminal you want to use in order to login to yours VMs (you can leave this option set to
+# "default" if you don't need a specific terminal, CloudTUI-advanced will use xterm)
+###
+terminal = default
+

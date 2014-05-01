@@ -1,7 +1,6 @@
 __author__ = 'Davide Monfrecola'
 
-from managers.Manager import Manager
-
+from managers.manager import Manager
 
 class NimbusManager (Manager):
 
@@ -9,6 +8,6 @@ class NimbusManager (Manager):
         print("Instance of class", NimbusManager.__name__)
 
     def check(self):
-        print("Checking Nimbus...")
+        print("Checking nimbus...")
         print("Done")
         pass

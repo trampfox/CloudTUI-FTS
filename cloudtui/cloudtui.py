@@ -1,7 +1,7 @@
 __author__ = 'Davide Monfrecola'
 
 import json
-from managers.nimbus.NimbusManager import NimbusManager
+from managers.nimbus.nimbusmanager import NimbusManager
 
 class CloudTUI:
 

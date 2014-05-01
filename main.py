@@ -1,5 +1,5 @@
 from cloudtui.cloudtui import CloudTUI
-from managers.Manager import Manager
+from managers.manager import Manager
 
 __author__ = 'Davide Monfrecola'
 
@@ -19,10 +19,12 @@ from clonevm import VM      # TODO choose where to put the VM class
 import time
 import cloudtui
 
+from confmanager.nimbusconfmanager import NimbusConfManager
+
 def hello():
     print("Hello world")
 
 
 if __name__ == "__main__":
-    cloudTUI = CloudTUI()
-    cloudTUI.start()
+    #cloudTUI = CloudTUI()
+    #cloudTUI.start()

@@ -1,6 +1,6 @@
 __author__ = 'Davide Monfrecola'
 
-from managers import Manager
+from managers.manager import Manager
 
 class OpenStackManager (Manager):
     

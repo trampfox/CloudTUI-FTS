@@ -1,6 +1,6 @@
 __author__ = 'Davide Monfrecola'
 
-import IMonitor
+from imonitor import IMonitor
 
 class Monitor(IMonitor):
     """Common base class for all cloud platform monitor (implements IMonitor interface)"""
