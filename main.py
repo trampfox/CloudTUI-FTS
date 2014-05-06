@@ -26,5 +26,5 @@ def hello():
 
 
 if __name__ == "__main__":
-    #cloudTUI = CloudTUI()
-    #cloudTUI.start()
+    cloudTUI = CloudTUI()
+    cloudTUI.start()

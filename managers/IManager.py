@@ -6,4 +6,16 @@ class IManager:
     def __init__(self):
         pass
 
-    def show_instances(self): raise NotImplementedError
+    def connect(self): raise NotImplementedError
+
+    def close_connections(self): raise NotImplementedError
+
+    def get_all_instances(self): raise NotImplementedError
+
+    def print_all_instances(self): raise NotImplementedError
+
+    def login_vm(self): raise NotImplementedError
+
+    def clone_vm(self): raise NotImplementedError
+
+    def terminate_vm(self): raise NotImplementedError

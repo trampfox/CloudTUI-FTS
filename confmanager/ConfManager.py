@@ -13,6 +13,11 @@ class ConfManager(IConfManager):
         self.parser = SafeConfigParser()
         self.parser.read('conf/' + self.__platform + '/login.txt')
 
+    def read(self):
+        """Read configuration file"""
+        self.read_options()
+        self.read_monitor_data()
+
     def read_login_data(self):
         """Read login data from login.txt file"""
         pass

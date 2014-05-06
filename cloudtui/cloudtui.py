@@ -14,6 +14,9 @@ class CloudTUI:
         constructor = globals()[str(platform_selected[1])]
         instance = constructor()
 
+        instance.connect()
+        instance.terminate_vm()
+
     def show_menu(self):
         global kill
 
