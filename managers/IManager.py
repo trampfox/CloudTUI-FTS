@@ -16,6 +16,8 @@ class IManager:
 
     def login_vm(self): raise NotImplementedError
 
-    def clone_vm(self): raise NotImplementedError
+    def run_vm(self): raise NotImplementedError
+
+    def clone_instance(self, instance): raise NotImplementedError
 
     def terminate_vm(self): raise NotImplementedError

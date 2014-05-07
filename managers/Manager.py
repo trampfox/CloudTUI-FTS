@@ -1,9 +1,12 @@
 __author__ = 'Davide Monfrecola'
 
 import boto
+import os
+import base64
 from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.connection import S3Connection
 from boto.ec2.regioninfo import RegionInfo
+from boto.ec2.blockdevicemapping import BlockDeviceMapping, BlockDeviceType
 from imanager import IManager
 
 class Manager(IManager):
@@ -19,7 +22,7 @@ class Manager(IManager):
         cf = OrdinaryCallingFormat()
 
         self.s3conn = S3Connection(self.conf.vws_repository_s3id, self.conf.vws_repository_s3key,
-                                   host=self.conf.vws_repository_host, port=self.conf.vws_repository_port,
+                                   host=self.conf.vws_repository_host, port=int(self.conf.vws_repository_port),
                                    is_secure=False, calling_format=cf)
 
     def close_connections(self):
@@ -42,6 +45,14 @@ class Manager(IManager):
                     ids.append(vm.id)
 
         return ids
+
+    def get_instance(self, instance_index):
+        instances = self.ec2conn.get_all_instances()
+        if len(instances) == 0:
+            return None
+        else:
+            return instances[0].instances[instance_index]
+
 
     def print_all_instances(self):
         """Print instance id, image id, public DNS and state for each active instance"""
@@ -72,5 +83,3 @@ class Manager(IManager):
                 print("Instance terminated")
             except Exception as e:
                 print("An error occured: {0}".format(e.message))
-
-
