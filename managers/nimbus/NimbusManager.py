@@ -13,13 +13,12 @@ class NimbusManager (Manager):
     def __init__(self):
         self.conf = NimbusConfManager()
         self.conf.read()
-
-        print("Instance of class", NimbusManager.__name__)
+        self.conf.read_cloud_conf()
 
     def connect(self):
         """Connection to the endpoint specified in the configuration file"""
         try:
-            self.region = RegionInfo(name="nimbus", endpoint=self.conf.vws_repository_host)
+            self.region = RegionInfo(name="nimbus", endpoint=self.conf.ec2_host)
             # trying connection to endpoint
             Manager.connect(self)
 
@@ -33,10 +32,39 @@ class NimbusManager (Manager):
         cf = OrdinaryCallingFormat()
 
         # get all buckets that user owns
-        buckets = self.s3conn.get_all_buckets()
+        try:
+            buckets = self.s3conn.get_bucket("Repo", validate=False)
+        except:
+            raise
+        # test
+        print buckets
 
+    def run_vm(self):
 
-        print("Clone end")
+        images = self.ec2conn.get_all_images()
+        image_ids = []
+
+        try:
+            print("-- Available images --")
+            i = 1
+            for image in images:
+                print("{0}) {1} - {2} - {3} - {4}").format(i, image.id, image.kernel_id, image.type, image.state)
+                image_ids.append(image.id)
+                i = i + 1
+
+            choice = input("Please select the image to run (0 return to main manu): ")
+
+            if int(choice) == 0:
+                return 0;
+            else:
+                selected_vm_id = image_ids[choice - 1]
+
+            print("Creating new instance for image {0}").format(selected_vm_id)
+
+            self.ec2conn.run_instances(selected_vm_id, min_count=1, max_count=1, instance_type="m1.medium")
+
+        except Exception as e:
+            print("An error occured: {0}").format(e.message)
 
     # def clone_instance(self, instance):
     #     """

@@ -25,12 +25,13 @@ class NimbusConfManager(ConfManager):
 
     def read_cloud_conf(self):
         """Read cloud.properties file"""
-        self.cloud_parser.readfp(FakeSecHead(open(self.path + '/conf/hotel-kvm.conf')))
-        self.vws_repository = self.cloud_parser.get('cloud', 'vws.repository')
-        self.vws_repository_host = self.vws_repository.split(":")[0]
-        self.vws_repository_port = self.vws_repository.split(":")[1]
-        self.vws_repository_s3id = self.cloud_parser.get('cloud', 'vws.repository.s3id')
-        self.vws_repository_s3key = self.cloud_parser.get('cloud', 'vws.repository.s3key')
+        self.cloud_parser.readfp(FakeSecHead(open(self.path + '/conf/hotel.conf')))
+        self.ec2_url = self.cloud_parser.get('cloud', 'vws.repository')
+        self.ec2_host = self.ec2_url.split(":")[0]
+        self.ec2_port = self.ec2_url.split(":")[1]
+        self.ec2_access_key_id = self.cloud_parser.get('cloud', 'vws.repository.s3id')
+        self.ec2_secret_access_key = self.cloud_parser.get('cloud', 'vws.repository.s3key')
+        self.ec2_path = ""
 
     def get_repository_host(self):
         return

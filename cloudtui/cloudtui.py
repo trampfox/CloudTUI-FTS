@@ -2,6 +2,8 @@ __author__ = 'Davide Monfrecola'
 
 import json
 from managers.nimbus.nimbusmanager import NimbusManager
+from managers.openstack.openstackmanager import OpenStackManager
+from managers.eucalyptus.eucalyptusmanager import EucalyptusManager
 
 class CloudTUI:
 
@@ -10,12 +12,33 @@ class CloudTUI:
 
     def start(self):
         platform_selected = self.show_menu()
+        #platform_selected = ['', 'nimbus']
         # Create a new instance according to user platform selection
         constructor = globals()[str(platform_selected[1])]
-        instance = constructor()
+        manager = constructor()
 
-        instance.connect()
-        instance.terminate_vm()
+        manager.connect()
+
+        while(True):
+            manager.show_menu()
+
+        #instance.connect()
+        #instance.terminate_vm()
+        #instance.clone_instance(None)
+        #print("Run instances 1")
+        #instance.run_vm()
+        #instance.print_all_images()
+        #instance.print_all_instances()
+        #instance.print_all_volumes()
+        #instance.print_all_key_pairs()
+        #instance.print_all_instance_types()
+        #instance.print_all_zones()
+        #instance.print_all_security_groups()
+        #instance.print_all_snapshots()
+        #instance.get_all_instance_ids()
+        #v = instance.get_all_volume_ids()
+        print("Goodbye")
+
 
     def show_menu(self):
         global kill
