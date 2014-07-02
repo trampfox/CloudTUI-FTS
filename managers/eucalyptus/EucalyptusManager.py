@@ -16,6 +16,7 @@ class EucalyptusManager(Manager):
         self.conf = EucalyptusConfManager()
         self.conf.read()
         self.images = None
+        self.instance_types = None
         self.security_groups = None
         self.keys = None
         self.snapshots = None
@@ -56,17 +57,17 @@ class EucalyptusManager(Manager):
         self.images = self.ec2conn.get_all_images()"""
 
     def show_menu(self):
-        os.system("clear")
         menu_text = """\nWhat would you like to do?
 --------------------------
 1) Create new instance
 2) Show running instances
-3) Stop/pause/reboot instance
-4) Create new volume
-5) Show available volumes
-6) Show key pairs
-7) Show connection information
-8) Exit\n"""
+3) Reboot instance
+4) Terminate instance
+5) Create new volume
+6) Show available volumes
+7) Show key pairs
+8) Show connection information
+9) Exit\n"""
         print(menu_text)
         try:
             # user input
@@ -77,7 +78,11 @@ class EucalyptusManager(Manager):
             elif choice == 2:
                 self.print_all_instances()
             elif choice == 3:
-                self.terminate_vm()
+                self.reboot_instance()
+            elif choice == 4:
+                self.terminate_instance()
+            elif choice == 6:
+                self.print_all_volumes()
             else:
                 raise Exception("Unavailable choice!")
         except Exception as e:
@@ -88,34 +93,34 @@ class EucalyptusManager(Manager):
 
         :return:
         """
-        self.print_all_images()
-        image_index = input("Select image: ")
-        image_id = self.images[image_index - 1].id
+        Manager.create_new_instance(self)
+        # instance types
         self.print_all_instance_types()
-        instance_type_index = input("Select instance type: ")
-        instance_type = self.instance_types[instance_type_index - 1].name
-        self.print_all_security_groups()
-        security_group_index = input("Select security group: ")
-        security_group = self.security_groups[security_group_index - 1].name
-        self.print_all_key_pairs()
-        key_pair_index = input("Select key pair: ")
-        key_name = self.key_pairs[key_pair_index - 1].name
+        if len(self.instance_types) > 0:
+            instance_type_index = input("Select instance type: ")
+            self.instance_type = self.instance_types[instance_type_index - 1].name
+        else:
+            print("There are no instance types available!")
 
-        print("\nCreating new instance with the following properties:")
-        print("-- Image ID: " + str(image_id))
-        print("-- Instance type: " + str(instance_type))
-        print("-- Security group: " + str(security_group))
-        print("-- Key pair: " + str(key_name))
+        print("\n--- Creating new instance with the following properties:")
+        print("- %-20s %-30s" % ("Image ID", str(self.image_id)))
+        print("- %-20s %-30s" % ("Security group", str(self.security_group)))
+        print("- %-20s %-30s" % ("Key pair", str(self.key_name)))
         #print("\nDo you want to continue? (y/n)")
 
         try:
-            reservation = self.ec2conn.run_instances(image_id=image_id,
-                                                     key_name=key_name,
-                                                     instance_type=instance_type,
-                                                     security_groups=[security_group],
+            reservation = self.ec2conn.run_instances(image_id=self.image_id,
+                                                     key_name=self.key_name,
+                                                     instance_type=self.instance_type,
+                                                     security_groups=self.security_group,
                                                      min_count=1,
                                                      max_count=1)
-            print reservation
+            print("\n--- Reservation created")
+            print("- %-20s %-30s" % ("ID", reservation.id))
+            for instance in reservation.instances:
+                print("- %-20s %-30s" % ("Instance ID", instance.id))
+                print("- %-20s %-30s" % ("Instance status", instance.state))
+                print("- %-20s %-30s" % ("Instance placement", instance.placement))
         except Exception as e:
             print("An error occured: {0}".format(e.message))
 

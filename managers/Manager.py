@@ -154,30 +154,37 @@ class Manager(IManager):
             #print("%-10s %-25s %-25s %-25s %-25s" % (i, image.id, image.kernel_id, image.type, image.state))
             i = i + 1
 
-    def run_vm(self):
+    def create_new_instance(self):
+        """
 
-        images = self.ec2conn.get_all_images()
-        image_ids = self.get_all_image_ids(images)
+        :return:
+        """
+        # image
+        self.print_all_images()
+        if len(self.images) > 0:
+            image_index = input("Select image: ")
+            self.image_id = self.images[image_index - 1].id
+        else:
+            print("There are no images available!")
+            return False
+        # security group
+        self.print_all_security_groups()
+        if len(self.security_groups) > 0:
+            security_group_index = input("Select security group: ")
+            self.security_group = [self.security_groups[security_group_index - 1].name]
+        else:
+            self.security_group = None
+            print("There are no security groups available!")
+        # key name
+        self.print_all_key_pairs()
+        if len(self.keys) > 0:
+            key_pair_index = input("Select key pair: ")
+            self.key_name = self.keys[key_pair_index - 1].name
+        else:
+            self.key_name = None
+            print("There are no keys available!")
 
-        try:
-            self.print_all_images(images)
-
-            choice = input("Please select the image to run (0 return to main manu): ")
-
-            if int(choice) == 0:
-                return 0;
-            else:
-                selected_vm_id = image_ids[choice - 1]
-
-            print("Creating new instance for image {0}").format(selected_vm_id)
-
-            self.ec2conn.run_instances(selected_vm_id, min_count=1, max_count=1, instance_type="m1.medium")
-
-        except Exception as e:
-            print("An error occured: {0}").format(e.message)
-
-
-    def terminate_vm(self):
+    def terminate_instance(self):
         ids = self.get_all_instance_ids()
 
         if len(ids) == 0:
@@ -192,5 +199,23 @@ class Manager(IManager):
                 print("Selected: " + str([ids[vm_index - 1]]))
                 self.ec2conn.terminate_instances(instance_ids=[ids[vm_index - 1]])
                 print("Instance terminated")
+            except Exception as e:
+                print("An error occured: {0}".format(e.message))
+
+    def reboot_instance(self):
+        ids = self.get_all_instance_ids()
+
+        if len(ids) == 0:
+            print("You don't have any instance running or pending")
+        else:
+            try:
+                self.print_all_instances()
+                print("0 - Cancel")
+                print("")
+                vm_index = input("Please select the VM that you want to reboot: ")
+                # terminate selected vm
+                print("Selected: " + str([ids[vm_index - 1]]))
+                self.ec2conn.reboot_instances(instance_ids=[ids[vm_index - 1]])
+                print("Instance rebooted")
             except Exception as e:
                 print("An error occured: {0}".format(e.message))

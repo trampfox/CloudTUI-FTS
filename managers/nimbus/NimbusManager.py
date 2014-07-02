@@ -14,6 +14,11 @@ class NimbusManager (Manager):
         self.conf = NimbusConfManager()
         self.conf.read()
         self.conf.read_cloud_conf()
+        self.images = None
+        self.security_groups = None
+        self.keys = None
+        self.snapshots = None
+        self.volumes = None
 
     def connect(self):
         """Connection to the endpoint specified in the configuration file"""
@@ -27,6 +32,34 @@ class NimbusManager (Manager):
         except Exception as e:
             print("Connection error({0})".format(e.message))
 
+    def show_menu(self):
+        menu_text = """\nWhat would you like to do?
+--------------------------
+1) Create new instance
+2) Show running instances
+3) Reboot instance
+4) Terminate instance
+5) Show key pairs
+6) Show connection information
+7) Exit\n"""
+        print(menu_text)
+        try:
+            # user input
+            print("Please make a choice: ")
+            choice = input()
+            if choice == 1:
+                self.create_new_instance()
+            elif choice == 2:
+                self.print_all_instances()
+            elif choice == 3:
+                self.reboot_instance()
+            elif choice == 4:
+                self.terminate_instance()
+            else:
+                raise Exception("Unavailable choice!")
+        except Exception as e:
+            print(e.message)
+
     def clone_instance(self, instance):
         print("Clone start")
         cf = OrdinaryCallingFormat()
@@ -39,32 +72,32 @@ class NimbusManager (Manager):
         # test
         print buckets
 
-    def run_vm(self):
+    def create_new_instance(self):
+        """
 
-        images = self.ec2conn.get_all_images()
-        image_ids = []
+        :return:
+        """
+        Manager.create_new_instance(self)
+        print("\n--- Creating new instance with the following properties:")
+        print("- %-20s %-30s" % ("Image ID", str(self.image_id)))
+        print("- %-20s %-30s" % ("Security group", str(self.security_group)))
+        print("- %-20s %-30s" % ("Key pair", str(self.key_name)))
+        #print("\nDo you want to continue? (y/n)")
 
         try:
-            print("-- Available images --")
-            i = 1
-            for image in images:
-                print("{0}) {1} - {2} - {3} - {4}").format(i, image.id, image.kernel_id, image.type, image.state)
-                image_ids.append(image.id)
-                i = i + 1
-
-            choice = input("Please select the image to run (0 return to main manu): ")
-
-            if int(choice) == 0:
-                return 0;
-            else:
-                selected_vm_id = image_ids[choice - 1]
-
-            print("Creating new instance for image {0}").format(selected_vm_id)
-
-            self.ec2conn.run_instances(selected_vm_id, min_count=1, max_count=1, instance_type="m1.medium")
-
+            reservation = self.ec2conn.run_instances(image_id=self.image_id,
+                                                     key_name=self.key_name,
+                                                     security_groups=self.security_group,
+                                                     min_count=1,
+                                                     max_count=1)
+            print("\n--- Reservation created")
+            print("- %-20s %-30s" % ("ID", reservation.id))
+            for instance in reservation.instances:
+                print("- %-20s %-30s" % ("Instance ID", instance.id))
+                print("- %-20s %-30s" % ("Instance status", instance.state))
+                print("- %-20s %-30s" % ("Instance placement", instance.placement))
         except Exception as e:
-            print("An error occured: {0}").format(e.message)
+            print("An error occured: {0}".format(e.message))
 
     # def clone_instance(self, instance):
     #     """
