@@ -154,6 +154,19 @@ class Manager(IManager):
             #print("%-10s %-25s %-25s %-25s %-25s" % (i, image.id, image.kernel_id, image.type, image.state))
             i = i + 1
 
+    def get_instance_id(self):
+        ids = self.get_all_instance_ids()
+
+        if len(ids) == 0:
+            print("You don't have any instance running or pending")
+        else:
+            self.print_all_instances()
+            print("0 - Cancel")
+            print("")
+            vm_index = input("Please select the instance: ")
+            #print("Selected: " + str([ids[vm_index - 1]]))
+            return vm_index
+
     def create_new_instance(self):
         """
 
@@ -185,37 +198,17 @@ class Manager(IManager):
             print("There are no keys available!")
 
     def terminate_instance(self):
-        ids = self.get_all_instance_ids()
-
-        if len(ids) == 0:
-            print("You don't have any instance running or pending")
-        else:
-            try:
-                self.print_all_instances()
-                print("0 - Cancel")
-                print("")
-                vm_index = input("Please select the VM that you want to terminate: ")
-                # terminate selected vm
-                print("Selected: " + str([ids[vm_index - 1]]))
-                self.ec2conn.terminate_instances(instance_ids=[ids[vm_index - 1]])
-                print("Instance terminated")
-            except Exception as e:
-                print("An error occured: {0}".format(e.message))
+        try:
+            instance_id = self.get_instance_id()
+            self.ec2conn.terminate_instances(instance_ids=[instance_id])
+            print("Instance terminated")
+        except Exception as e:
+            print("An error occured: {0}".format(e.message))
 
     def reboot_instance(self):
-        ids = self.get_all_instance_ids()
-
-        if len(ids) == 0:
-            print("You don't have any instance running or pending")
-        else:
-            try:
-                self.print_all_instances()
-                print("0 - Cancel")
-                print("")
-                vm_index = input("Please select the VM that you want to reboot: ")
-                # terminate selected vm
-                print("Selected: " + str([ids[vm_index - 1]]))
-                self.ec2conn.reboot_instances(instance_ids=[ids[vm_index - 1]])
-                print("Instance rebooted")
-            except Exception as e:
-                print("An error occured: {0}".format(e.message))
+        try:
+            instance_id = self.get_instance_id()
+            self.ec2conn.reboot_instances(instance_ids=[instance_id])
+            print("Instance rebooted")
+        except Exception as e:
+            print("An error occured: {0}".format(e.message))

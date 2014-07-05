@@ -78,16 +78,26 @@ class NimbusManager (Manager):
         :return:
         """
         Manager.create_new_instance(self)
+
+        # monitoring
+        monitoring = raw_input("Do you want to enable monitoring? (y/n): ")
+        if monitoring == "y":
+            monitoring_enabled = True
+        else:
+            monitoring_enabled = False
+
         print("\n--- Creating new instance with the following properties:")
         print("- %-20s %-30s" % ("Image ID", str(self.image_id)))
         print("- %-20s %-30s" % ("Security group", str(self.security_group)))
         print("- %-20s %-30s" % ("Key pair", str(self.key_name)))
+        print("- %-20s %-30s" % ("Monitoring", str(monitoring_enabled)))
         #print("\nDo you want to continue? (y/n)")
 
         try:
             reservation = self.ec2conn.run_instances(image_id=self.image_id,
                                                      key_name=self.key_name,
                                                      security_groups=self.security_group,
+                                                     monitoring_enabled=monitoring_enabled,
                                                      min_count=1,
                                                      max_count=1)
             print("\n--- Reservation created")

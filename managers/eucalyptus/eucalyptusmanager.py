@@ -2,6 +2,8 @@ __author__ = 'Davide Monfrecola'
 
 import boto
 import os
+import datetime
+import boto.ec2.cloudwatch
 from managers.manager import Manager
 from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.connection import SubdomainCallingFormat
@@ -21,6 +23,7 @@ class EucalyptusManager(Manager):
         self.keys = None
         self.snapshots = None
         self.volumes = None
+        self.instance_monitored = []
 
     def connect(self):
         """Connection to the endpoint specified in the configuration file"""
@@ -63,11 +66,13 @@ class EucalyptusManager(Manager):
 2) Show running instances
 3) Reboot instance
 4) Terminate instance
-5) Create new volume
-6) Show available volumes
-7) Show key pairs
-8) Show connection information
-9) Exit\n"""
+5) Select instance to monitor
+6) Get CloudWatch metric data
+7) Create new volume
+8) Show available volumes
+9) Show key pairs
+10) Show connection information
+11) Exit\n"""
         print(menu_text)
         try:
             # user input
@@ -81,7 +86,11 @@ class EucalyptusManager(Manager):
                 self.reboot_instance()
             elif choice == 4:
                 self.terminate_instance()
+            elif choice == 5:
+                self.enable_monitoring()
             elif choice == 6:
+                self.get_cloudwatch_metric_data()
+            elif choice == 7:
                 self.print_all_volumes()
             else:
                 raise Exception("Unavailable choice!")
@@ -101,11 +110,18 @@ class EucalyptusManager(Manager):
             self.instance_type = self.instance_types[instance_type_index - 1].name
         else:
             print("There are no instance types available!")
+        # monitoring
+        monitoring = raw_input("Do you want to enable monitoring? (y/n): ")
+        if monitoring == "y":
+            monitoring_enabled = True
+        else:
+            monitoring_enabled = False
 
         print("\n--- Creating new instance with the following properties:")
         print("- %-20s %-30s" % ("Image ID", str(self.image_id)))
         print("- %-20s %-30s" % ("Security group", str(self.security_group)))
         print("- %-20s %-30s" % ("Key pair", str(self.key_name)))
+        print("- %-20s %-30s" % ("Monitoring", str(monitoring_enabled)))
         #print("\nDo you want to continue? (y/n)")
 
         try:
@@ -113,6 +129,7 @@ class EucalyptusManager(Manager):
                                                      key_name=self.key_name,
                                                      instance_type=self.instance_type,
                                                      security_groups=self.security_group,
+                                                     monitoring_enabled=monitoring_enabled,
                                                      min_count=1,
                                                      max_count=1)
             print("\n--- Reservation created")
@@ -121,6 +138,42 @@ class EucalyptusManager(Manager):
                 print("- %-20s %-30s" % ("Instance ID", instance.id))
                 print("- %-20s %-30s" % ("Instance status", instance.state))
                 print("- %-20s %-30s" % ("Instance placement", instance.placement))
+        except Exception as e:
+            print("An error occured: {0}".format(e.message))
+
+    def enable_monitoring(self):
+        try:
+            instance_id = self.get_instance_id()
+            self.ec2conn.monitor_instances(instance_ids=[instance_id])
+            self.instance_monitored.append(ids[vm_index - 1])
+            print("Monitoring enabled for instance: " + str([ids[vm_index - 1]]))
+        except Exception as e:
+            print("An error occured: {0}".format(e.message))
+
+    def get_cloudwatch_metric_data(self):
+        try:
+            instance_id = self.get_instance_id()
+
+            cw_conn = boto.ec2.cloudwatch.CloudWatchConnection(aws_access_key_id=self.conf.ec2_access_key_id,
+                                                         aws_secret_access_key=self.conf.ec2_secret_access_key,
+                                                         region=self.region,
+                                                         validate_certs=False,
+                                                         is_secure=False,
+                                                         port=8773,
+                                                         path="/services/CloudWatch")
+            metrics = cw_conn.list_metrics(namespace='')
+            print metrics
+            metric_statistics = cw_conn.get_metric_statistics(
+                60,
+                datetime.datetime.utcnow() - datetime.timedelta(seconds=600),
+                datetime.datetime.utcnow(),
+                'Metric:CPUUtilization',
+                'AWS/EC2',
+                'Maximum',
+                dimensions={'InstanceId':[instance_id]}
+            )
+            #dimensions={'InstanceId':[instance_id]} --> get_metric_statistics parameter
+            print metric_statistics
         except Exception as e:
             print("An error occured: {0}".format(e.message))
 
