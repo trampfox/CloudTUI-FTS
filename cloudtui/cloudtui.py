@@ -2,7 +2,7 @@ __author__ = 'Davide Monfrecola'
 
 import json
 from managers.nimbus.nimbusmanager import NimbusManager
-#from managers.openstack.openstackmanager import OpenStackManager
+from managers.openstack.openstackmanager import OpenStackManager
 from managers.eucalyptus.eucalyptusmanager import EucalyptusManager
 
 class CloudTUI:

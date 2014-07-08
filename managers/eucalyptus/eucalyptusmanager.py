@@ -1,14 +1,12 @@
 __author__ = 'Davide Monfrecola'
 
 import boto
-import os
 import datetime
 import boto.ec2.cloudwatch
 from managers.manager import Manager
 from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.connection import SubdomainCallingFormat
 from boto.s3.connection import S3Connection
-from boto.s3.key import Key
 from boto.ec2.regioninfo import RegionInfo
 from confmanager.eucalyptusconfmanager import EucalyptusConfManager
 
@@ -141,35 +139,28 @@ class EucalyptusManager(Manager):
         except Exception as e:
             print("An error occured: {0}".format(e.message))
 
-    def enable_monitoring(self):
-        try:
-            instance_id = self.get_instance_id()
-            self.ec2conn.monitor_instances(instance_ids=[instance_id])
-            self.instance_monitored.append(ids[vm_index - 1])
-            print("Monitoring enabled for instance: " + str([ids[vm_index - 1]]))
-        except Exception as e:
-            print("An error occured: {0}".format(e.message))
+    ### CloudWatch
 
     def get_cloudwatch_metric_data(self):
         try:
             instance_id = self.get_instance_id()
 
-            cw_conn = boto.ec2.cloudwatch.CloudWatchConnection(aws_access_key_id=self.conf.ec2_access_key_id,
-                                                         aws_secret_access_key=self.conf.ec2_secret_access_key,
-                                                         region=self.region,
-                                                         validate_certs=False,
-                                                         is_secure=False,
-                                                         port=8773,
-                                                         path="/services/CloudWatch")
-            metrics = cw_conn.list_metrics(namespace='')
-            print metrics
-            metric_statistics = cw_conn.get_metric_statistics(
+            self.cw_conn = boto.ec2.cloudwatch.CloudWatchConnection(aws_access_key_id=self.conf.ec2_access_key_id,
+                                                                    aws_secret_access_key=self.conf.ec2_secret_access_key,
+                                                                    region=self.region,
+                                                                    validate_certs=False,
+                                                                    is_secure=False,
+                                                                    port=8773,
+                                                                    path="/services/CloudWatch")
+
+            self.get_cloudwatch_metrics(instance_id, True)
+            metric_statistics = self.cw_conn.get_metric_statistics(
                 60,
                 datetime.datetime.utcnow() - datetime.timedelta(seconds=600),
                 datetime.datetime.utcnow(),
-                'Metric:CPUUtilization',
+                'CPUUtilization',
                 'AWS/EC2',
-                'Maximum',
+                ['Average', 'Sum', 'SampleCount', 'Maximum', 'Minimum'],
                 dimensions={'InstanceId':[instance_id]}
             )
             #dimensions={'InstanceId':[instance_id]} --> get_metric_statistics parameter
@@ -177,3 +168,12 @@ class EucalyptusManager(Manager):
         except Exception as e:
             print("An error occured: {0}".format(e.message))
 
+    def get_cloudwatch_metrics(self, instance_id="", print_them=False):
+        metrics = self.cw_conn.list_metrics(dimensions={'InstanceId':[instance_id]})
+
+        if print_them:
+            i = 1
+            for metric in metrics:
+                print("{0}) {1}".format(i, metric))
+
+        return metrics

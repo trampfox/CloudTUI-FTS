@@ -150,7 +150,7 @@ class Manager(IManager):
         if self.snapshots is None:
             self.snapshots = self.ec2conn.get_all_snapshots()
         i = 1
-        for snapshot in snapshots:
+        for snapshot in self.snapshots:
             #print("%-10s %-25s %-25s %-25s %-25s" % (i, image.id, image.kernel_id, image.type, image.state))
             i = i + 1
 
@@ -165,7 +165,7 @@ class Manager(IManager):
             print("")
             vm_index = input("Please select the instance: ")
             #print("Selected: " + str([ids[vm_index - 1]]))
-            return vm_index
+            return ids[vm_index - 1]
 
     def create_new_instance(self):
         """
@@ -210,5 +210,15 @@ class Manager(IManager):
             instance_id = self.get_instance_id()
             self.ec2conn.reboot_instances(instance_ids=[instance_id])
             print("Instance rebooted")
+        except Exception as e:
+            print("An error occured: {0}".format(e.message))
+
+    ### Monitoring
+
+    def enable_monitoring(self):
+        try:
+            instance_id = self.get_instance_id()
+            self.ec2conn.monitor_instances(instance_ids=[instance_id])
+            print("Monitoring enabled for instance: " + instance_id)
         except Exception as e:
             print("An error occured: {0}".format(e.message))

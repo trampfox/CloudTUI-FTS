@@ -1,6 +1,7 @@
 __author__ = 'Davide Monfrecola'
 
 import boto
+import datetime
 from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -39,9 +40,11 @@ class NimbusManager (Manager):
 2) Show running instances
 3) Reboot instance
 4) Terminate instance
-5) Show key pairs
-6) Show connection information
-7) Exit\n"""
+5) Select instance to monitor
+6) Get CloudWatch metric data
+8) Show key pairs
+9) Show connection information
+10) Exit\n"""
         print(menu_text)
         try:
             # user input
@@ -55,6 +58,10 @@ class NimbusManager (Manager):
                 self.reboot_instance()
             elif choice == 4:
                 self.terminate_instance()
+            elif choice == 5:
+                self.enable_monitoring()
+            elif choice == 6:
+                self.get_cloudwatch_metric_data()
             else:
                 raise Exception("Unavailable choice!")
         except Exception as e:
@@ -106,6 +113,32 @@ class NimbusManager (Manager):
                 print("- %-20s %-30s" % ("Instance ID", instance.id))
                 print("- %-20s %-30s" % ("Instance status", instance.state))
                 print("- %-20s %-30s" % ("Instance placement", instance.placement))
+        except Exception as e:
+            print("An error occured: {0}".format(e.message))
+
+    def get_cloudwatch_metric_data(self):
+        try:
+            instance_id = self.get_instance_id()
+
+            cw_conn = boto.ec2.cloudwatch.CloudWatchConnection(aws_access_key_id=self.conf.ec2_access_key_id,
+                                                               aws_secret_access_key=self.conf.ec2_secret_access_key,
+                                                               region=self.region,
+                                                               validate_certs=False,
+                                                               is_secure=False,
+                                                               port=8445)
+
+            metrics = cw_conn.list_metrics(dimensions={'InstanceId':[instance_id]})
+            metric_statistics = cw_conn.get_metric_statistics(
+                60,
+                datetime.datetime.utcnow() - datetime.timedelta(seconds=600),
+                datetime.datetime.utcnow(),
+                'CPUUtilization',
+                'AWS/EC2',
+                ['Average', 'Sum', 'SampleCount', 'Maximum', 'Minimum'],
+                dimensions={'InstanceId':[instance_id]}
+            )
+            #dimensions={'InstanceId':[instance_id]} --> get_metric_statistics parameter
+            print metric_statistics
         except Exception as e:
             print("An error occured: {0}".format(e.message))
 
