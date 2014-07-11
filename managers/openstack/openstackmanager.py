@@ -1,13 +1,9 @@
 __author__ = 'Davide Monfrecola'
 
-import boto
-from boto.s3.connection import OrdinaryCallingFormat
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
-from boto.ec2.regioninfo import RegionInfo
 from managers.manager import Manager
 from confmanager.openstackconfmanager import OpenStackConfManager
 import novaclient.v1_1.client as nvclient
+import
 
 class OpenStackManager():
     
@@ -19,6 +15,7 @@ class OpenStackManager():
         self.keys = None
         self.security_groups = None
         self.networks = None
+        self.instances = None
 
     def connect(self):
         """Connection to the endpoint specified in the configuration file"""
@@ -50,23 +47,88 @@ class OpenStackManager():
         # end OpenStack Python SDK #
 
     def create_new_instance(self):
-        image = self.nova.images.find(name="futuregrid/ubuntu-14.04")
-        flavor = self.nova.flavors.find(name="m1.tiny")
 
-        instance = self.nova.servers.create(name="vm2", image=image,
-                                            flavor=flavor, key_name="trampfox-key")
+        # image
+        self.print_all_images()
+        if len(self.images) > 0:
+            image_index = input("Select image: ")
+            self.image = self.images[image_index - 1]._info['name']
+        else:
+            print("There are no images available!")
+            return False
+        #flavor
+        self.print_all_instance_types()
+        if len(self.instance_types) > 0:
+            instance_index = input("Select instance type: ")
+            self.instance_type = self.instance_types[instance_index - 1]._info['name']
+        else:
+            print("There are no instance types available!")
+            return False
+        # security groups
+        self.print_all_security_groups()
+        if len(self.security_groups) > 0:
+            security_group_index = input("Select security group: ")
+            self.security_group = self.security_groups[security_group_index - 1].name
+        else:
+            print("There are no security groups available!")
+            return False
+        # key name
+        self.print_all_key_pairs()
+        if len(self.keys) > 0:
+            key_index = input("Select key: ")
+            self.key_name = self.keys[key_index - 1]._info['keypair']['name']
+        else:
+            print("There are no keys available!")
+            return False
+
+        server_name = raw_input("Insert instance name: ")
+
+        print("\n--- Creating new instance with the following properties:")
+        print("- %-20s %-30s" % ("Image name", str(self.image)))
+        print("- %-20s %-30s" % ("Instance type", str(self.instance_type)))
+        print("- %-20s %-30s" % ("Security group", str(self.security_group)))
+        print("- %-20s %-30s" % ("Key pair", str(self.key_name)))
+
+        image = self.nova.images.find(name=self.image)
+        flavor = self.nova.flavors.find(name=self.instance_type)
+
+        instance = self.nova.servers.create(name=server_name, image=image, flavor=flavor, key_name=self.key_name,
+                                            security_groups=[self.security_group])
+
+    def instance_action(self, action):
+        try:
+            self.print_all_instances()
+            if len(self.instances) == 0:
+                print("You don't have any instance running or pending")
+            else:
+                instance_index = input("Please select the instance: ")
+
+            if action == "reboot":
+                self.nova.servers.reboot(self.instances[instance_index - 1])
+                print("Instance rebooted")
+            elif action == "delete":
+                self.nova.servers.delete(self.instances[instance_index - 1])
+                print("Instance terminated")
+            elif action == "diagnostic":
+                diagnostics = self.nova.servers.diagnostics(self.instances[instance_index - 1])
+                print(diagnostics)
+            else:
+                raise Exception("Action not supported")
+
+        except Exception as e:
+            print("An error occured: {0}".format(e.message))
 
     def print_all_instances(self):
         """Print instance id, image id, public DNS and state for each active instance"""
         print("--- Instances ---")
         print("%-10s %-25s %-25s %-25s %-25s %-20s" % ("-", "Name", "Created", "Key name", "Private IP Address", "Status"))
-        instances = self.nova.servers.list()
+        self.instances = self.nova.servers.list()
 
-        if len(instances) == 0:
+        if len(self.instances) == 0:
             print("You don't have any instance running or pending")
         else:
             i = 1
-            for instance in instances:
+            for instance in self.instances:
                 print("%-10s %-25s %-25s %-25s %-25s %-20s" % (i, instance.name, instance._info['created'],
                                                                instance._info['key_name'], instance.networks['private'],
                                                                instance.status))
@@ -145,6 +207,7 @@ class OpenStackManager():
 2) Show running instances
 3) Reboot instance
 4) Terminate instance
+5) Retrieve diagnostic
 5) Exit\n"""
         print(menu_text)
         try:
@@ -156,11 +219,11 @@ class OpenStackManager():
             elif choice == 2:
                 self.print_all_instances()
             elif choice == 3:
-                self.print_all_instance_types()
+                self.instance_action("reboot")
             elif choice == 4:
-                self.print_all_key_pairs()
+                self.instance_action("delete")
             elif choice == 5:
-                self.print_all_security_groups()
+                self.instance_action("diagnostic")
             elif choice == 6:
                 self.print_all_networks()
             else:

@@ -197,19 +197,18 @@ class Manager(IManager):
             self.key_name = None
             print("There are no keys available!")
 
-    def terminate_instance(self):
+    def instance_action(self, action):
         try:
             instance_id = self.get_instance_id()
-            self.ec2conn.terminate_instances(instance_ids=[instance_id])
-            print("Instance terminated")
-        except Exception as e:
-            print("An error occured: {0}".format(e.message))
 
-    def reboot_instance(self):
-        try:
-            instance_id = self.get_instance_id()
-            self.ec2conn.reboot_instances(instance_ids=[instance_id])
-            print("Instance rebooted")
+            if action == "reboot":
+                self.ec2conn.reboot_instances(instance_ids=[instance_id])
+                print("Instance rebooted")
+            elif action == "terminate":
+                self.ec2conn.terminate_instances(instance_ids=[instance_id])
+                print("Instance terminated")
+            else:
+                raise Exception("Action not supported")
         except Exception as e:
             print("An error occured: {0}".format(e.message))
 

@@ -57,44 +57,6 @@ class EucalyptusManager(Manager):
         self.key_pairs = self.ec2conn.get_all_key_pairs()
         self.images = self.ec2conn.get_all_images()"""
 
-    def show_menu(self):
-        menu_text = """\nWhat would you like to do?
---------------------------
-1) Create new instance
-2) Show running instances
-3) Reboot instance
-4) Terminate instance
-5) Select instance to monitor
-6) Get CloudWatch metric data
-7) Create new volume
-8) Show available volumes
-9) Show key pairs
-10) Show connection information
-11) Exit\n"""
-        print(menu_text)
-        try:
-            # user input
-            print("Please make a choice: ")
-            choice = input()
-            if choice == 1:
-                self.create_new_instance()
-            elif choice == 2:
-                self.print_all_instances()
-            elif choice == 3:
-                self.reboot_instance()
-            elif choice == 4:
-                self.terminate_instance()
-            elif choice == 5:
-                self.enable_monitoring()
-            elif choice == 6:
-                self.get_cloudwatch_metric_data()
-            elif choice == 7:
-                self.print_all_volumes()
-            else:
-                raise Exception("Unavailable choice!")
-        except Exception as e:
-            print(e.message)
-
     def create_new_instance(self):
         """
 
@@ -177,3 +139,41 @@ class EucalyptusManager(Manager):
                 print("{0}) {1}".format(i, metric))
 
         return metrics
+
+    def show_menu(self):
+        menu_text = """\nWhat would you like to do?
+--------------------------
+1) Create new instance
+2) Show running instances
+3) Reboot instance
+4) Terminate instance
+5) Select instance to monitor
+6) Get CloudWatch metric data
+7) Create new volume
+8) Show available volumes
+9) Show key pairs
+10) Show connection information
+11) Exit\n"""
+        print(menu_text)
+        try:
+            # user input
+            print("Please make a choice: ")
+            choice = input()
+            if choice == 1:
+                self.create_new_instance()
+            elif choice == 2:
+                self.print_all_instances()
+            elif choice == 3:
+                self.instance_action("reboot")
+            elif choice == 4:
+                self.instance_action("terminate")
+            elif choice == 5:
+                self.enable_monitoring()
+            elif choice == 6:
+                self.get_cloudwatch_metric_data()
+            elif choice == 7:
+                self.print_all_volumes()
+            else:
+                raise Exception("Unavailable choice!")
+        except Exception as e:
+            print(e.message)
