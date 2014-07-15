@@ -36,6 +36,10 @@ port = 0
 # host together with his port in the two previous variables)
 enabled = 0
 
+[autoscaling]
+
+phantom_url = https://phantom.nimbusproject.org:8445
+
 [options]
 ###
 # 0 if you don't need to validate you Nimbus certificate, 1 otherwise (see readme for more information)

@@ -1,5 +1,6 @@
 __author__ = 'Davide Monfrecola'
 
+import urlparse
 from confmanager import ConfManager
 from ConfigParser import SafeConfigParser
 
@@ -22,6 +23,10 @@ class NimbusConfManager(ConfManager):
         self.path = self.parser.get('nimbus', 'path')
         self.canonical_id = self.parser.get('nimbus', 'canonical_id')
         self.ssh_key_id = self.parser.get('nimbus', 'ssh_key_id')
+        up = urlparse.urlparse(self.parser.get('autoscaling', 'phantom_url'))
+        self.phantom_host = up.hostname
+        self.phantom_port = up.port
+
 
     def read_cloud_conf(self):
         """Read cloud.properties file"""

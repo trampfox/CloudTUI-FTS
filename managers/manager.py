@@ -20,7 +20,7 @@ class Manager(IManager):
         self.ec2conn = boto.connect_ec2(self.conf.ec2_access_key_id,
                                         self.conf.ec2_secret_access_key,
                                         region=self.region,
-                                        port=self.conf.port,
+                                        port=int(self.conf.port),
                                         path=self.conf.ec2_path,
                                         is_secure=False)
 

@@ -8,6 +8,7 @@ from boto.s3.key import Key
 from boto.ec2.regioninfo import RegionInfo
 from managers.manager import Manager
 from confmanager.nimbusconfmanager import NimbusConfManager
+from autoscaling.nimbusautoscaling import NimbusAutoScaling
 
 class NimbusManager (Manager):
 
@@ -15,6 +16,7 @@ class NimbusManager (Manager):
         self.conf = NimbusConfManager()
         self.conf.read()
         self.conf.read_cloud_conf()
+        self.autoscaling = NimbusAutoScaling(self.conf)
         self.images = None
         self.security_groups = None
         self.keys = None
@@ -44,7 +46,11 @@ class NimbusManager (Manager):
 6) Get CloudWatch metric data
 8) Show key pairs
 9) Show connection information
-10) Exit\n"""
+10) List autoscaling groups
+11) Create autoscaling group
+12) List domains
+13) Create domain
+11) Exit\n"""
         print(menu_text)
         try:
             # user input
@@ -62,6 +68,14 @@ class NimbusManager (Manager):
                 self.enable_monitoring()
             elif choice == 6:
                 self.get_cloudwatch_metric_data()
+            elif choice == 10:
+                self.autoscaling.get_launch_configurations()
+            elif choice == 11:
+                self.autoscaling.create_launch_configuration()
+            elif choice == 12:
+                self.autoscaling.get_domains()
+            elif choice == 13:
+                self.autoscaling.create_domain()
             else:
                 raise Exception("Unavailable choice!")
         except Exception as e:
