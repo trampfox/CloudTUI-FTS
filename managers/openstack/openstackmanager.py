@@ -2,7 +2,7 @@ __author__ = 'Davide Monfrecola'
 
 from managers.manager import Manager
 from confmanager.openstackconfmanager import OpenStackConfManager
-import novaclient.v1_1.client as nvclient
+import novaclient.v2.client as nvclient
 
 class OpenStackManager():
     

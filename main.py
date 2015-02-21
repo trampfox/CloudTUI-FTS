@@ -7,6 +7,7 @@ import managers
 import os
 import boto
 import sys
+import signal
 import threading
 import string
 import socket
@@ -21,13 +22,38 @@ from boto.ec2.regioninfo import RegionInfo
 #from ssl import SSLSocket
 from phantomclient.phantomclient import PhantomClient
 from phantomclient.phantomrequest import PhantomRequest
+from monitors.openstackmonitor import OpenstackMonitor
+from rules.ruleengine import RuleEngine
+from Queue import Queue
+from threading import Thread
 
 def hello():
     print("Hello world")
 
+def signal_handler(signal, frame):
+    print('You pressed Ctrl+C!')
+    sys.exit(0)
 
 if __name__ == "__main__":
-    pr = PhantomRequest()
-    pr.test()
+    #pr = PhantomRequest()
+    #pr.test()
     #cloudTUI = CloudTUI()
     #cloudTUI.start()
+    meters_queue = Queue()
+
+    os_monitor = OpenstackMonitor()
+    monitor = Thread(target=os_monitor.run, args=(meters_queue,))
+    monitor.setDaemon(True)
+    monitor.start()
+
+    rule_engine = RuleEngine()
+    rule_engine_monitor = Thread(target=rule_engine.run, args=(meters_queue,))
+    rule_engine_monitor.setDaemon(True)
+    rule_engine_monitor.start()
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.pause()
+
+    monitor.join()
+    rule_engine.join()
+
