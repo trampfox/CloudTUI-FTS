@@ -5,7 +5,9 @@ from iruleengine import IRuleEngine
 from rule import Rule
 from monitors.sqlitemanager import SqliteConnector
 from datetime import datetime
-
+from monitors.intellect.Intellect import Intellect
+from monitors.intellect.Intellect import Callable
+from monitors.intellect.examples.testing.ClassA import ClassA
 
 class RuleEngine(IRuleEngine):
     """Rule engine that are used to manage all the rules associated with a cloud manager
@@ -55,5 +57,8 @@ class RuleEngine(IRuleEngine):
                                    "resource_id='{0}'".format(element["resource_id"]))
 
                 self.db.print_all("samples")
+
             except Exception, e:
                 print("Error %s:" % e.args[0])
+
+    #def check_policy(self):

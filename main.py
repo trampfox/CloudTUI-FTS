@@ -14,6 +14,7 @@ import socket
 import subprocess
 import time
 import cloudtui
+
 from clonevm import VM      # TODO choose where to put the VM class
 from confmanager.nimbusconfmanager import NimbusConfManager
 from boto.s3.connection import OrdinaryCallingFormat
@@ -24,8 +25,10 @@ from phantomclient.phantomclient import PhantomClient
 from phantomclient.phantomrequest import PhantomRequest
 from monitors.openstackmonitor import OpenstackMonitor
 from rules.ruleengine import RuleEngine
+from managers.openstack.openstackagent import OpenstackAgent
 from Queue import Queue
 from threading import Thread
+
 
 def hello():
     print("Hello world")
@@ -40,6 +43,7 @@ if __name__ == "__main__":
     #cloudTUI = CloudTUI()
     #cloudTUI.start()
     meters_queue = Queue()
+    cmd_queue = Queue()
 
     os_monitor = OpenstackMonitor()
     monitor = Thread(target=os_monitor.run, args=(meters_queue,))
@@ -50,6 +54,11 @@ if __name__ == "__main__":
     rule_engine_monitor = Thread(target=rule_engine.run, args=(meters_queue,))
     rule_engine_monitor.setDaemon(True)
     rule_engine_monitor.start()
+
+    agent = OpenstackAgent()
+    os_agent = Thread(target=agent.run, args=(cmd_queue,))
+    os_agent.setDaemon(True)
+    os_agent.start()
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.pause()

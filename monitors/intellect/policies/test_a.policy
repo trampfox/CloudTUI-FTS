@@ -1,0 +1,26 @@
+from intellect.examples.testing.ClassA import ClassA
+import logging
+
+resources = ["cpu", "network", "disk"]
+threshold = {
+    "cpu": 8,
+    "network": 7,
+    "disk": 6
+}
+
+rule "test load":
+        agenda-group test_a
+        when:
+                $classA := ClassA( property0 in resources and property1>threshold[property0] and get_meters('a')>0)
+        then:
+                # mark the 'ClassA' matches in memory as modified
+                modify $classA:
+                        property0 = $classA.property0 + " overload"
+                        modified = True
+                        # increment the match's 'property2' value by 1000
+                        # property2 = $classA.property2 + 1000
+
+                attribute count = $classA.property2
+                print "property2 = {0}".format( count )
+
+                log(logging.DEBUG, "rule_a fired")
