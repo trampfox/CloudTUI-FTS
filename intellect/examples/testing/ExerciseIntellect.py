@@ -40,9 +40,11 @@ Initial Version: Feb 9, 2011
 @author: Michael Joseph Walsh
 """
 
-import sys, traceback, logging
+import sys
+import traceback
+import logging
 
-from intellect.Intellect import Intellect
+from intellect import Intellect
 from intellect.Intellect import Callable
 
 

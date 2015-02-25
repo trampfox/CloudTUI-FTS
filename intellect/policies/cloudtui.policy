@@ -1,0 +1,13 @@
+from intellect.classes.Resource import Resource
+
+resources = ["cpu", "network", "disk"]
+threshold = 130
+
+rule "test load":
+        agenda-group cpu
+        when:
+                $resource := Resource( get_ema("cpu")>threshold)
+                #$resource := Resource( resource_id == "1")
+        then:
+                attribute ema_value = $resource.get_ema("cpu")
+                print "*** rule fired! ema_value intellect = {0}".format( ema_value )

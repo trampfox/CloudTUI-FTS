@@ -38,7 +38,8 @@ Initial Version: Feb 2, 2011
 @author: Michael Joseph Walsh
 """
 
-from intellect.examples.testing.ClassA import ClassA
+from intellect.examples.testing import ClassA
+
 
 class ClassB(ClassA):
     '''

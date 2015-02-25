@@ -1,8 +1,9 @@
-import sys, traceback, logging
+import sys
+import logging
 
 from intellect.Intellect import Intellect
 from intellect.Intellect import Callable
-from intellect.examples.testing.ClassA import ClassA
+from intellect.examples.testing import ClassA
 
 
 class MyIntellect(Intellect):

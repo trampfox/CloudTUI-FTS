@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Copyright (c) 2011, Michael Joseph Walsh.
+Copyright (c) 2011, The MITRE Corporation.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,27 +30,27 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-'''
-Created on Aug 17, 2011
+"""
+ExerciseIntellect
+
+Description: Exercises the Intellect grammar
+
+Initial Version: Dec 29, 2011
 
 @author: Michael Joseph Walsh
-'''
-
-import sys, logging, time, random
+"""
+import sys
+import traceback
+import logging
 
 from intellect.Intellect import Intellect
+from intellect.examples.testing import ClassA
 
-from intellect.examples.bahBahBlackSheep.BuyOrder import BuyOrder
-
-class MyIntellect(Intellect):
-    pass
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # tune down logging inside Intellect
     logger = logging.getLogger('intellect')
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.DEBUG) # change this to ERROR for less output
     consoleHandler = logging.StreamHandler(stream=sys.stdout)
     consoleHandler.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s%(message)s'))
     logger.addHandler(consoleHandler)
@@ -63,25 +63,21 @@ if __name__ == '__main__':
     consoleHandler.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s%(message)s'))
     logger.addHandler(consoleHandler)
 
-    logging.getLogger("example").debug("Creating reasoning engine.")
-    myIntellect = MyIntellect()
+    print "*"*80
+    print """create an instance of MyIntellect extending Intellect, create some facts, and exercise the grammar"""
+    print "*"*80
 
-    logging.getLogger("example").debug("Asking the engine to learn my policy.")
-    policy = myIntellect.learn(myIntellect.local_file_uri("./rulesets/example.policy"))
+    try:
+        myIntellect = Intellect()
 
-    #print myIntellect.policy.str_tree("semantic model:")
+        policy_a = myIntellect.learn(Intellect.local_file_uri("./rulesets/test_f.policy"))
 
-    max_buy_orders_to_start = input('Provide the maximum number possible buy orders to start with:  ')
+        myIntellect.learn(ClassA(property1="apple"))
+        #myIntellect.learn(ClassA( property1="pear"))
+        #myIntellect.learn(ClassA( property1="grape"))
 
-    buy_order_to_start = random.randint(1, max_buy_orders_to_start)
+        #logger.debug("reasoning over policy w/ objects in memory")
 
-    logging.getLogger("example").debug("Asking the engine to learn a BuyOrder for {0} sheep.".format(buy_order_to_start))
-    myIntellect.learn(BuyOrder(buy_order_to_start))
-
-    myIntellect.reason()
-
-    while True:
-        logging.getLogger("example").debug("{0} in knowledge.".format(myIntellect.knowledge))
-        time.sleep(5)
-        logging.getLogger("example").debug("Messaging reasoning engine to reason.")
         myIntellect.reason()
+    except Exception as e:
+        traceback.print_exc(limit=sys.getrecursionlimit(), file=sys.stdout)
