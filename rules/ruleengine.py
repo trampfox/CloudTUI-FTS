@@ -15,13 +15,11 @@ class RuleEngine(IRuleEngine):
         self.db = SqliteConnector('samples.db')
         self.resources = {}
         self.my_intellect = Intellect()
+        self.agenda_groups = []
         self.read_resources()
         self.read_policies()
         # temp
         #self.db.create("samples", "resource_id text, date text, volume real")
-
-    def read_rules(self):
-        pass
 
     def read_resources(self):
         '''
@@ -36,24 +34,10 @@ class RuleEngine(IRuleEngine):
 
     def read_policies(self):
         policy_a = self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/cloudtui.policy"))
-        print(policy_a)
         print("cloudtui policy loaded")
-        print(self.my_intellect.knowledge)
-
-    '''def get_last_value_test(self, resource_id):
-        #Checks if is the first value for the resorce with the ID specified
-        self.db.connect()
-
-        value = None
-        rows = self.db.query("SELECT * FROM samples WHERE resource_id='{0}' LIMIT 1".format(resource_id))
-        # debug
-
-        for row in rows:
-            print("Rows found")
-            print row
-            value = row[2]
-
-        return value'''
+        # TEST
+        self.agenda_groups.append("cpu")
+        self.agenda_groups.append("network")
 
     def run(self, meters_queue):
         while True:
@@ -77,9 +61,27 @@ class RuleEngine(IRuleEngine):
                                    "resource_id='{0}'".format(element["resource_id"]))
                 '''
                 self.resources[str(element["resource_id"])].add_sample("cpu", element["value"])
-                self.my_intellect.reason(["cpu"])
+
+                self.check_policies()
 
             except Exception, e:
                 print("[RuleEngine] Error %s" % e.args[0])
 
-    #def check_policy(self):
+    def check_policies(self):
+        self.my_intellect.reason(self.agenda_groups)
+
+
+    '''def get_last_value_test(self, resource_id):
+        #Checks if is the first value for the resorce with the ID specified
+        self.db.connect()
+
+        value = None
+        rows = self.db.query("SELECT * FROM samples WHERE resource_id='{0}' LIMIT 1".format(resource_id))
+        # debug
+
+        for row in rows:
+            print("Rows found")
+            print row
+            value = row[2]
+
+        return value'''

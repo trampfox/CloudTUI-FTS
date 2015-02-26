@@ -24,17 +24,13 @@ class Resource(object):
         return self._ema_values
 
     def add_sample(self, meter, value):
-        print("add sample for meter {0} with value {1}".format(meter, value))
         if meter in self._ema_values.keys():
             ema_value = ema(value, self.ema_values[meter])
             self._ema_values[meter] = ema_value
         else:
             self._ema_values[meter] = value
 
-        print("ema value: {0}".format(ema_value))
-
     def get_ema(self, meter):
-        print("Getting ema value")
         if meter in self._ema_values.keys():
             return self._ema_values[meter]
         else:
