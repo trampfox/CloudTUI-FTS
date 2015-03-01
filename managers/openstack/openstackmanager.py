@@ -1,11 +1,14 @@
 __author__ = 'Davide Monfrecola'
 
+import ceilometerclient.client
+
 from managers.manager import Manager
 from confmanager.openstackconfmanager import OpenStackConfManager
-import novaclient.v2.client as nvclient
+#import novaclient.v2.client as nvclient
+from novaclient.client import Client
 
 class OpenStackManager():
-    
+
     def __init__(self):
         self.conf = OpenStackConfManager()
         self.conf.read()
@@ -32,11 +35,15 @@ class OpenStackManager():
 
         # OpenStack Python SDK #
         try:
-            self.nova = nvclient.Client(auth_url=self.conf.auth_url,
+            '''self.nova = nvclient.Client(auth_url=self.conf.auth_url,
                                         username=self.conf.username,
                                         api_key=self.conf.api_key,
                                         project_id=self.conf.tenant_name,
-                                        insecure=True)
+                                        insecure=True)'''
+            self.nova = Client(2, self.conf.username,
+                               self.conf.password,
+                               self.conf.tenant_name,
+                               self.conf.auth_url)
 
             print("Connection successfully established ")
             #print("Connection successfully established (s3conn): " + self.s3conn.host)
@@ -72,6 +79,15 @@ class OpenStackManager():
             print("There are no security groups available!")
             return False
         # key name
+        self.print_all_networks()
+        if len(self.networks) > 0:
+            key_index = input("Select network: ")
+            self.network = self.networks[key_index - 1].label
+            self.network_id = self.networks[key_index - 1].id
+        else:
+            print("There are no networks available!")
+            return False
+        # network
         self.print_all_key_pairs()
         if len(self.keys) > 0:
             key_index = input("Select key: ")
@@ -87,12 +103,18 @@ class OpenStackManager():
         print("- %-20s %-30s" % ("Instance type", str(self.instance_type)))
         print("- %-20s %-30s" % ("Security group", str(self.security_group)))
         print("- %-20s %-30s" % ("Key pair", str(self.key_name)))
+        print("- %-20s %-30s" % ("Network", str(self.network)))
 
         image = self.nova.images.find(name=self.image)
         flavor = self.nova.flavors.find(name=self.instance_type)
+        nics = [{"net-id": self.network_id}]
 
-        instance = self.nova.servers.create(name=server_name, image=image, flavor=flavor, key_name=self.key_name,
-                                            security_groups=[self.security_group])
+        instance = self.nova.servers.create(name=server_name,
+                                            image=image,
+                                            flavor=flavor,
+                                            key_name=self.key_name,
+                                            security_groups=[self.security_group],
+                                            nics=nics)
 
     def instance_action(self, action):
         try:
@@ -120,7 +142,7 @@ class OpenStackManager():
     def print_all_instances(self):
         """Print instance id, image id, public DNS and state for each active instance"""
         print("--- Instances ---")
-        print("%-10s %-25s %-25s %-25s %-25s %-20s" % ("-", "Name", "Created", "Key name", "Private IP Address", "Status"))
+        print("%-10s %-25s %-25s %-25s %-70s %-20s" % ("-", "Name", "Created", "Key name", "Private IP Address", "Status"))
         self.instances = self.nova.servers.list()
 
         if len(self.instances) == 0:
@@ -128,10 +150,45 @@ class OpenStackManager():
         else:
             i = 1
             for instance in self.instances:
-                print("%-10s %-25s %-25s %-25s %-25s %-20s" % (i, instance.name, instance._info['created'],
-                                                               instance._info['key_name'], instance.networks['private'],
+                print("%-10s %-25s %-25s %-25s %-70s %-20s" % (i, instance.name, instance._info['created'],
+                                                               instance._info['key_name'], instance.networks,
                                                                instance.status))
                 i += 1
+
+    def clone(self, instance_id):
+        '''
+        Create a new instance that is a clone of the instance with the instance ID
+        passed as parameter
+        '''
+        instance = self.nova.servers.get(instance_id)
+
+        if self.networks is None:
+            self.networks = self.nova.networks.list()
+
+        nics = []
+        for net_id in instance._info['addresses'].keys():
+            for network in self.networks:
+                if network.label == net_id:
+                    nics.append({"net-id": network.id})
+
+        security_groups = []
+        for security_group in instance._info['security_groups']:
+            security_groups.append(security_group['name'])
+
+        print("name: " + instance.name + "-clone")
+        print("image id: " + str(instance._info['image']['id']))
+        print("flavor id: " + str(instance._info['flavor']['id']))
+        print("key name: " + str(instance._info['key_name']))
+        print("sec groups: " + str(security_groups))
+        print("nics: " + str(nics))
+
+        instance = self.nova.servers.create(name=instance.name + "-clone",
+                                            image=instance._info['image']['id'],
+                                            flavor=instance._info['flavor']['id'],
+                                            key_name=instance._info['key_name'],
+                                            security_groups=security_groups,
+                                            nics=nics)
+
 
     def print_all_images(self):
         """
@@ -191,13 +248,35 @@ class OpenStackManager():
         Print id and other useful information of all networks available
         """
         print("--- Networks available ---")
-        print("%-10s %-25s %-35s" % ("ID", "Network name", ""))
+        print("%-10s %-25s %-35s" % ("ID", "Network name", "Description"))
         if self.networks is None:
             self.networks = self.nova.networks.list()
         i = 1
+        print(self.networks[0])
         for network in self.networks:
-            print("%-10s %-25s %-35s" % (i, network.name, network.description))
+            print("%-10s %-25s %-30s" % (i, network.label, network.id))
             i = i + 1
+
+
+    def ceilometer_test(self):
+        cclient = ceilometerclient.client.get_client(2, os_username="admin",
+                                                     os_password="admin",
+                                                     os_tenant_name="admin",
+                                                     os_auth_url="http://ms0204.utah.cloudlab.us:5000/v2.0")
+
+        #print(cclient.meters.list())
+
+        print("Test query")
+        query = [dict(field='resource_id', op='eq', value='instance-00000001-d0c4a71b-b407-4db5-8c39-87917f5e24af-tape0a4fe75-18')]
+        samples = cclient.samples.list(meter_name='network.incoming.bytes', limit=10, q=query)
+        print(samples)
+
+        resources = cclient.resources.list()
+
+        for resource in resources:
+            print("*" * 80)
+            print(resource)
+            print("*" * 80)
 
     def show_menu(self):
         menu_text = """\nWhat would you like to do?
@@ -207,8 +286,13 @@ class OpenStackManager():
 3) Reboot instance
 4) Terminate instance
 5) Retrieve diagnostic
-5) Exit\n"""
+6) Exit
+7) TEST Ceilometer\n"""
         print(menu_text)
+
+        # TODO capire dove mettere
+        self.connect()
+
         try:
             # user input
             print("Please make a choice: ")
@@ -225,6 +309,10 @@ class OpenStackManager():
                 self.instance_action("diagnostic")
             elif choice == 6:
                 self.print_all_networks()
+            elif choice == 7:
+                self.ceilometer_test()
+            elif choice == 8:
+                self.clone("6aff697a-f8b3-4f1d-b49b-d2d5077ff2db")
             else:
                 raise Exception("Unavailable choice!")
         except Exception as e:

@@ -37,8 +37,12 @@ class OpenStackConfManager(ConfManager):
         # OpenStack Python SDK #
         self.auth_url = self.parser.get('openstack', 'os_auth_url')
         self.username = self.parser.get('openstack', 'os_username')
-        self.api_key = self.parser.get('openstack', 'os_api_key')
+        self.password = self.parser.get('openstack', 'os_password')
+        #self.api_key = self.parser.get('openstack', 'os_api_key')
         self.tenant_name = self.parser.get('openstack', 'os_tenant_name')
+
+        # OpenStack Ceilometer
+        self.ceilometer_auth = self.parser.get('openstack', 'os_ceilometer_auth')
 
         print("Login data read!")
 

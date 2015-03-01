@@ -40,9 +40,9 @@ def signal_handler(signal, frame):
 if __name__ == "__main__":
     #pr = PhantomRequest()
     #pr.test()
-    #cloudTUI = CloudTUI()
-    #cloudTUI.start()
-    meters_queue = Queue()
+    cloudTUI = CloudTUI()
+    cloudTUI.start()
+    '''meters_queue = Queue()
     cmd_queue = Queue()
 
     os_monitor = OpenstackMonitor()
@@ -64,5 +64,4 @@ if __name__ == "__main__":
     signal.pause()
 
     monitor.join()
-    rule_engine.join()
-
+    rule_engine.join()'''
