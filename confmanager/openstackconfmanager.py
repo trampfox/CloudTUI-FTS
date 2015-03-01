@@ -3,7 +3,7 @@ __author__ = 'Davide Monfrecola'
 from confmanager import ConfManager
 from ConfigParser import SafeConfigParser
 
-class OpenStackConfManager(ConfManager):
+class OpenstackConfManager(ConfManager):
     """OpenStack configuration management"""
 
     def __init__(self):

@@ -3,14 +3,14 @@ __author__ = 'Davide Monfrecola'
 import ceilometerclient.client
 
 from managers.manager import Manager
-from confmanager.openstackconfmanager import OpenStackConfManager
+from confmanager.openstackconfmanager import OpenstackConfManager
 #import novaclient.v2.client as nvclient
 from novaclient.client import Client
 
-class OpenStackManager():
+class OpenstackManager():
 
     def __init__(self):
-        self.conf = OpenStackConfManager()
+        self.conf = OpenstackConfManager()
         self.conf.read()
         self.images = None
         self.instance_types = None
@@ -139,6 +139,15 @@ class OpenStackManager():
         except Exception as e:
             print("An error occured: {0}".format(e.message))
 
+    def get_instance_info(self):
+        info = []
+        for instance in self.nova.servers.list():
+            info.append({"id": instance.id, "name": instance.name})
+
+        return info
+
+
+
     def print_all_instances(self):
         """Print instance id, image id, public DNS and state for each active instance"""
         print("--- Instances ---")
@@ -155,7 +164,7 @@ class OpenStackManager():
                                                                instance.status))
                 i += 1
 
-    def clone(self, instance_id):
+    def clone_instance(self, instance_id):
         '''
         Create a new instance that is a clone of the instance with the instance ID
         passed as parameter
@@ -175,19 +184,24 @@ class OpenStackManager():
         for security_group in instance._info['security_groups']:
             security_groups.append(security_group['name'])
 
+        print("")
+        print("*" * 80)
+        print("Cloning the instance {0}... (this is a test, the command will not be executed)".format(instance_id))
         print("name: " + instance.name + "-clone")
         print("image id: " + str(instance._info['image']['id']))
         print("flavor id: " + str(instance._info['flavor']['id']))
         print("key name: " + str(instance._info['key_name']))
         print("sec groups: " + str(security_groups))
         print("nics: " + str(nics))
+        print("*" * 80)
+        print("")
 
-        instance = self.nova.servers.create(name=instance.name + "-clone",
+        '''instance = self.nova.servers.create(name=instance.name + "-clone",
                                             image=instance._info['image']['id'],
                                             flavor=instance._info['flavor']['id'],
                                             key_name=instance._info['key_name'],
                                             security_groups=security_groups,
-                                            nics=nics)
+                                            nics=nics)'''
 
 
     def print_all_images(self):
@@ -291,7 +305,7 @@ class OpenStackManager():
         print(menu_text)
 
         # TODO capire dove mettere
-        self.connect()
+        #self.connect()
 
         try:
             # user input
@@ -312,6 +326,7 @@ class OpenStackManager():
             elif choice == 7:
                 self.ceilometer_test()
             elif choice == 8:
+                # TODO Remove this test method call
                 self.clone("6aff697a-f8b3-4f1d-b49b-d2d5077ff2db")
             else:
                 raise Exception("Unavailable choice!")

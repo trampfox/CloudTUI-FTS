@@ -6,44 +6,46 @@ from intellect.Intellect import Intellect
 from intellect.Intellect import Callable
 from intellect.classes.Resource import Resource
 
+import sys
+import os
 
 class RuleEngine(IRuleEngine):
     """Rule engine that are used to manage all the rules associated with a cloud manager
        (implements IRuleEngine interface)"""
 
-    def __init__(self):
-        self.db = SqliteConnector('samples.db')
+    def __init__(self, resources, cmd_queue):
+        self.cmd_queue = cmd_queue
+        self.resource_info = resources
         self.resources = {}
         self.my_intellect = Intellect()
         self.agenda_groups = []
-        self.read_resources()
-        self.read_policies()
-        # temp
-        #self.db.create("samples", "resource_id text, date text, volume real")
 
-    def read_resources(self):
+    def init_resources(self):
         '''
-        reads resources from configuration file and
         creates a new instance of Resource for each
-        resource
+        resource in self.resources
         '''
-        # TODO leggere risorse da file di configurazione yaml
-        # test with resource_id = 1
-        self.resources['1'] = Resource('1', "Test 1")
-        self.my_intellect.learn(self.resources['1'])
+        for resource in self.resource_info:
+            self.resources[resource['id']] = Resource(resource_id=resource["id"],
+                                                      name=resource["name"],
+                                                      command_queue=self.cmd_queue)
+            print("[RuleEngine] Add resource {0} as fact".format(resource["name"]))
+            self.my_intellect.learn(self.resources[resource['id']])
 
     def read_policies(self):
-        policy_a = self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/cloudtui.policy"))
-        print("cloudtui policy loaded")
+        policy_a = self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/openstack.policy"))
+        print("[RuleEngine] Openstack policy loaded")
         # TEST
         self.agenda_groups.append("cpu")
         self.agenda_groups.append("network")
 
     def run(self, meters_queue):
+        self.init_resources()
+        self.read_policies()
         while True:
             try:
                 element = meters_queue.get()
-                print("[RuleEngine] Value received for resource {0:d}: {1:d}"
+                print("[RuleEngine] Value received for resource {0}: {1}"
                        .format(element["resource_id"], element["value"]))
                 '''last_value = self.get_last_value(element["resource_id"])
                 last_value = self.get_last_value(element["resource_id"])
@@ -60,12 +62,16 @@ class RuleEngine(IRuleEngine):
                                    "volume='{0:.3f}'".format(ema_value),
                                    "resource_id='{0}'".format(element["resource_id"]))
                 '''
-                self.resources[str(element["resource_id"])].add_sample("cpu", element["value"])
+                self.resources[element["resource_id"]].add_sample(element["meter"], element["value"])
+                #self.resources[element["resource_id"]].add_sample("cpu", element["value"])
 
                 self.check_policies()
 
             except Exception, e:
                 print("[RuleEngine] Error %s" % e.args[0])
+                print(sys.exc_info()[0].__name__)
+                print(os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename))
+                print(sys.exc_info()[2].tb_lineno)
 
     def check_policies(self):
         self.my_intellect.reason(self.agenda_groups)
