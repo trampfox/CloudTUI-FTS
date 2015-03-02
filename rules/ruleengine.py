@@ -34,8 +34,9 @@ class RuleEngine(IRuleEngine):
 
     def read_policies(self):
         policy_a = self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/openstack.policy"))
-        print("[RuleEngine] Openstack policy loaded")
+        #print("[RuleEngine] Openstack policy loaded")
         # TEST
+        # TODO gestione agenda groups
         self.agenda_groups.append("cpu")
         self.agenda_groups.append("network")
 
@@ -45,25 +46,12 @@ class RuleEngine(IRuleEngine):
         while True:
             try:
                 element = meters_queue.get()
-                print("[RuleEngine] Value received for resource {0}: {1}"
-                       .format(element["resource_id"], element["value"]))
-                '''last_value = self.get_last_value(element["resource_id"])
-                last_value = self.get_last_value(element["resource_id"])
-                if last_value is None:
-                    print("Insert first record")
-                    self.db.insert("samples",
-                                   "'{0}', '{1}', '{2}'".format(element["resource_id"],
-                                                          datetime.now(),
-                                                          element["value"]))
-                else:
-                    print("Update record")
-                    ema_value = monitoringutils.ema(element["value"], last_value)
-                    self.db.update("samples",
-                                   "volume='{0:.3f}'".format(ema_value),
-                                   "resource_id='{0}'".format(element["resource_id"]))
-                '''
-                self.resources[element["resource_id"]].add_sample(element["meter"], element["value"])
-                #self.resources[element["resource_id"]].add_sample("cpu", element["value"])
+                print("[RuleEngine] Value received for resource {0}"
+                       .format(str(element)))
+
+                self.resources[element["resource_id"]].add_sample(meter=element["meter"],
+                                                                  value=element["value"],
+                                                                  timestamp=element["timestamp"])
 
                 self.check_policies()
 
@@ -75,19 +63,3 @@ class RuleEngine(IRuleEngine):
 
     def check_policies(self):
         self.my_intellect.reason(self.agenda_groups)
-
-
-    '''def get_last_value_test(self, resource_id):
-        #Checks if is the first value for the resorce with the ID specified
-        self.db.connect()
-
-        value = None
-        rows = self.db.query("SELECT * FROM samples WHERE resource_id='{0}' LIMIT 1".format(resource_id))
-        # debug
-
-        for row in rows:
-            print("Rows found")
-            print row
-            value = row[2]
-
-        return value'''

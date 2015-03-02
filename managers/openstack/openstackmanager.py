@@ -19,34 +19,19 @@ class OpenstackManager():
         self.networks = None
         self.instances = None
 
+    def get_conf(self):
+        return self.conf
+
     def connect(self):
         """Connection to the endpoint specified in the configuration file"""
-        """try:
-            # boto #
-            self.region = RegionInfo(name="nova", endpoint=self.conf.ec2_host)
-            # trying connection to endpoint
-            Manager.connect(self)
-            # end boto #
-
-            print("Connection successfully established")
-            print("Connection successfully established (s3conn): " + self.s3conn.host)
-        except Exception as e:
-            print("Connection error({0})".format(e.message))"""
-
         # OpenStack Python SDK #
         try:
-            '''self.nova = nvclient.Client(auth_url=self.conf.auth_url,
-                                        username=self.conf.username,
-                                        api_key=self.conf.api_key,
-                                        project_id=self.conf.tenant_name,
-                                        insecure=True)'''
             self.nova = Client(2, self.conf.username,
                                self.conf.password,
                                self.conf.tenant_name,
                                self.conf.auth_url)
 
-            print("Connection successfully established ")
-            #print("Connection successfully established (s3conn): " + self.s3conn.host)
+            print("[OpenstackManager] Connection successfully established ")
         except Exception as e:
             print("Connection error({0})".format(e.message))
 
@@ -146,8 +131,6 @@ class OpenstackManager():
 
         return info
 
-
-
     def print_all_instances(self):
         """Print instance id, image id, public DNS and state for each active instance"""
         print("--- Instances ---")
@@ -202,7 +185,6 @@ class OpenstackManager():
                                             key_name=instance._info['key_name'],
                                             security_groups=security_groups,
                                             nics=nics)'''
-
 
     def print_all_images(self):
         """
@@ -271,26 +253,6 @@ class OpenstackManager():
             print("%-10s %-25s %-30s" % (i, network.label, network.id))
             i = i + 1
 
-
-    def ceilometer_test(self):
-        cclient = ceilometerclient.client.get_client(2, os_username="admin",
-                                                     os_password="admin",
-                                                     os_tenant_name="admin",
-                                                     os_auth_url="http://ms0204.utah.cloudlab.us:5000/v2.0")
-
-        #print(cclient.meters.list())
-
-        print("Test query")
-        query = [dict(field='resource_id', op='eq', value='instance-00000001-d0c4a71b-b407-4db5-8c39-87917f5e24af-tape0a4fe75-18')]
-        samples = cclient.samples.list(meter_name='network.incoming.bytes', limit=10, q=query)
-        print(samples)
-
-        resources = cclient.resources.list()
-
-        for resource in resources:
-            print("*" * 80)
-            print(resource)
-            print("*" * 80)
 
     def show_menu(self):
         menu_text = """\nWhat would you like to do?

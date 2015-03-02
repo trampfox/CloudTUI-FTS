@@ -43,8 +43,8 @@ class OpenstackConfManager(ConfManager):
 
         # OpenStack Ceilometer
         self.ceilometer_auth = self.parser.get('openstack', 'os_ceilometer_auth')
+        self.ceilometer_username = self.parser.get('openstack', 'os_ceilometer_username')
+        self.ceilometer_password = self.parser.get('openstack', 'os_ceilometer_password')
+        self.ceilometer_tenant_name = self.parser.get('openstack', 'os_ceilometer_tenant_name')
 
-        print("Login data read!")
-
-    def get_repository_host(self):
-        return
+        #print("Login data read!")

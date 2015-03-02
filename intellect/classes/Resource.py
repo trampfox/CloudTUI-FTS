@@ -21,8 +21,6 @@ class Resource(object):
     def name(self):
         return self._name
 
-
-
     @property
     def ema_values(self):
         return self._ema_values
@@ -34,7 +32,7 @@ class Resource(object):
         else:
             self._ema_values[meter] = value
 
-    def add_sample(self, meter, value):
+    def add_sample(self, meter, value, timestamp):
         if meter in self._samples.keys():
             self._samples[meter] = value
         else:

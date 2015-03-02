@@ -7,7 +7,6 @@ import logging
 class OpenstackAgent:
 
     def __init__(self):
-        print("[Openstack agent] Started")
         self.manager = OpenstackManager()
         self.manager.connect()
 

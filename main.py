@@ -46,8 +46,9 @@ if __name__ == "__main__":
     os_manager = OpenstackManager()
     os_manager.connect()
     resources = os_manager.get_instance_info()
+    os_conf = os_manager.get_conf()
 
-    os_monitor = OpenstackMonitor(resources)
+    os_monitor = OpenstackMonitor(resources, os_conf)
     monitor = Thread(target=os_monitor.run, args=(meters_queue,))
     monitor.setDaemon(True)
     monitor.start()

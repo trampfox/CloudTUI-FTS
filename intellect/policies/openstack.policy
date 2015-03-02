@@ -1,6 +1,6 @@
 from intellect.classes.Resource import Resource
 
-threshold = 130
+threshold = 0.1
 
 rule "test load":
         agenda-group cpu
