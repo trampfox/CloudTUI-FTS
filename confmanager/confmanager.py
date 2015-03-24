@@ -11,7 +11,7 @@ class ConfManager(IConfManager):
         print('Create ConfManager platform: ' + platform)
         self.__platform = platform
         self.parser = SafeConfigParser()
-        self.parser.read('conf/' + self.__platform + '/login.txt')
+        self.parser.read('conf/' + self.__platform + '/login.conf')
 
     def read(self):
         """Read configuration file"""
