@@ -16,7 +16,7 @@ class ConfManager(IConfManager):
     def read(self):
         """Read configuration file"""
         self.read_options()
-        self.read_monitor_data()
+        #self.read_monitor_data()
 
     def read_login_data(self):
         """Read login data from login.txt file"""
