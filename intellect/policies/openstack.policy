@@ -1,0 +1,12 @@
+from intellect.classes.Resource import Resource
+
+threshold = 0.1
+
+rule "test load":
+        agenda-group cpu
+        when:
+                $resource := Resource( get_sample("cpu_util")>threshold)
+        then:
+                attribute cpu_util = $resource.get_sample("cpu_util")
+                $resource.clone()
+                print "*** rule fired for resource {0}! cpu_util intellect = {1} ***".format( $resource.resource_id, cpu_util )

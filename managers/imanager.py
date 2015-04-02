@@ -18,6 +18,6 @@ class IManager:
 
     def run_vm(self): raise NotImplementedError
 
-    def clone_instance(self, instance): raise NotImplementedError
+    def clone_instance(self, instance_id): raise NotImplementedError
 
     def terminate_vm(self): raise NotImplementedError

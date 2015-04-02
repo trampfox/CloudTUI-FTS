@@ -3,7 +3,7 @@ __author__ = 'Davide Monfrecola'
 from confmanager import ConfManager
 from ConfigParser import SafeConfigParser
 
-class OpenStackConfManager(ConfManager):
+class OpenstackConfManager(ConfManager):
     """OpenStack configuration management"""
 
     def __init__(self):
@@ -17,30 +17,17 @@ class OpenStackConfManager(ConfManager):
 
     def read_login_data(self):
         """Read login data from login.txt file"""
-        # boto #
-        self.ec2_access_key_id = self.parser.get('openstack', 'ec2_access_key_id')
-        self.ec2_secret_access_key = self.parser.get('openstack', 'ec2_secret_access_key')
-        self.ec2_url = self.parser.get('openstack', 'ec2_url')
-        self.ec2_host = self.parser.get('openstack', 'ec2_host')
-        self.ec2_port = self.parser.get('openstack', 'ec2_port')
-        self.port = self.parser.get('openstack', 'ec2_port')
-        self.ec2_path = self.parser.get('openstack', 'ec2_path')
-        self.ec2_private_key = self.parser.get('openstack', 'ec2_private_key')
-        self.ec2_cert = self.parser.get('openstack', 'ec2_cert')
-        self.nova_cert = self.parser.get('openstack', 'nova_cert')
-
-        self.s3_url = self.parser.get('openstack', 's3_url')
-        self.s3_host = self.parser.get('openstack', 's3_host')
-        self.s3_port = self.parser.get('openstack', 's3_port')
-        # end boto #
-
         # OpenStack Python SDK #
         self.auth_url = self.parser.get('openstack', 'os_auth_url')
         self.username = self.parser.get('openstack', 'os_username')
-        self.api_key = self.parser.get('openstack', 'os_api_key')
+        self.password = self.parser.get('openstack', 'os_password')
+        #self.api_key = self.parser.get('openstack', 'os_api_key')
         self.tenant_name = self.parser.get('openstack', 'os_tenant_name')
 
-        print("Login data read!")
+        # OpenStack Ceilometer
+        self.ceilometer_auth = self.parser.get('openstack', 'os_ceilometer_auth')
+        self.ceilometer_username = self.parser.get('openstack', 'os_ceilometer_username')
+        self.ceilometer_password = self.parser.get('openstack', 'os_ceilometer_password')
+        self.ceilometer_tenant_name = self.parser.get('openstack', 'os_ceilometer_tenant_name')
 
-    def get_repository_host(self):
-        return
+        #print("Login data read!")

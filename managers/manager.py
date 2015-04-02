@@ -210,7 +210,7 @@ class Manager(IManager):
             else:
                 raise Exception("Action not supported")
         except Exception as e:
-            print("An error occured: {0}".format(e.message))
+            print("An error occurred: {0}".format(e.message))
 
     ### Monitoring
 
@@ -220,4 +220,4 @@ class Manager(IManager):
             self.ec2conn.monitor_instances(instance_ids=[instance_id])
             print("Monitoring enabled for instance: " + instance_id)
         except Exception as e:
-            print("An error occured: {0}".format(e.message))
+            print("An error occurred: {0}".format(e.message))
