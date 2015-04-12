@@ -10,6 +10,7 @@ class Resource(object):
         self._samples = {}
         self._ema_values = ema_values
         self._command_queue = command_queue
+        self._cloned = False
 
         print "created an instance of Resource (id: {0})".format(self.resource_id)
 
@@ -51,4 +52,8 @@ class Resource(object):
             return None
 
     def clone(self):
-        self._command_queue.put({'command': 'clone', 'resource_id': self._resource_id})
+        if self._cloned == False:
+            self._command_queue.put({'command': 'clone', 'resource_id': self._resource_id})
+            self._cloned = True
+        else:
+            print "*** Instance already cloned ***"

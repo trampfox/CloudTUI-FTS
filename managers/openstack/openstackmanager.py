@@ -169,7 +169,7 @@ class OpenstackManager():
 
         print("")
         print("*" * 80)
-        print("Cloning the instance {0}... (this is a test, the command will not be executed)".format(instance_id))
+        print("Cloning the instance {0}...".format(instance_id))
         print("name: " + instance.name + "-clone")
         print("image id: " + str(instance._info['image']['id']))
         print("flavor id: " + str(instance._info['flavor']['id']))
@@ -179,12 +179,12 @@ class OpenstackManager():
         print("*" * 80)
         print("")
 
-        '''instance = self.nova.servers.create(name=instance.name + "-clone",
+        instance = self.nova.servers.create(name=instance.name + "-clone",
                                             image=instance._info['image']['id'],
                                             flavor=instance._info['flavor']['id'],
                                             key_name=instance._info['key_name'],
                                             security_groups=security_groups,
-                                            nics=nics)'''
+                                            nics=nics)
 
     def print_all_images(self):
         """
