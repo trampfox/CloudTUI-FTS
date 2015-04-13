@@ -32,6 +32,14 @@ class RuleEngine(IRuleEngine):
             print("[RuleEngine] Add resource {0} as fact".format(resource["name"]))
             self.my_intellect.learn(self.resources[resource['id']])
 
+    def add_instance(self, resource):
+        self.resources[resource['id']] = Resource(resource_id=resource["id"],
+                                                  name=resource["name"],
+                                                  command_queue=self.cmd_queue)
+        print("[RuleEngine] Add resource {0} as fact".format(resource["name"]))
+        self.my_intellect.learn(self.resources[resource['id']])
+
+
     def read_policies(self):
         policy_a = self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/openstack.policy"))
         #print("[RuleEngine] Openstack policy loaded")
