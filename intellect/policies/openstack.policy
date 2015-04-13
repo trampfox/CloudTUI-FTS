@@ -9,4 +9,4 @@ rule "test load":
         then:
                 attribute cpu_util = $resource.get_sample("cpu_util")
                 $resource.clone()
-                print "*** rule fired for resource {0}! cpu_util intellect = {1} ***".format( $resource.resource_id, cpu_util )
+                print "*** rule fired for resource {0}! cpu_util intellect = {1} ***".format($resource.resource_id, cpu_util) )
