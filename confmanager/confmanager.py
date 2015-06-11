@@ -1,10 +1,9 @@
 __author__ = 'Davide Monfrecola'
 
-from iconfmanager import IConfManager
 from ConfigParser import SafeConfigParser
 
-class ConfManager(IConfManager):
-    """Common base class for all configuration manager (implements IConfManager interface)"""
+class ConfManager():
+    """Common base class for all configuration manager"""
 
     def __init__(self, platform):
         """Initialize parser object"""
@@ -32,4 +31,3 @@ class ConfManager(IConfManager):
         """Read options values from [option] section"""
         self.validate_certs = self.parser.get('options', 'validate_certs')
         self.terminal = self.parser.get('options', 'terminal')
-

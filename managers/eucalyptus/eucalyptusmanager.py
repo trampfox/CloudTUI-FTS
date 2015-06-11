@@ -10,7 +10,7 @@ from boto.s3.connection import S3Connection
 from boto.ec2.regioninfo import RegionInfo
 from confmanager.eucalyptusconfmanager import EucalyptusConfManager
 
-class EucalyptusManager(Manager):
+class EucalyptusManager(BotoManager):
 
     def __init__(self):
         self.conf = EucalyptusConfManager()

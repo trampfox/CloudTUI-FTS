@@ -10,7 +10,7 @@ from managers.manager import Manager
 from confmanager.nimbusconfmanager import NimbusConfManager
 from autoscaling.nimbusautoscaling import NimbusAutoScaling
 
-class NimbusManager (Manager):
+class NimbusManager (BotoManager):
 
     def __init__(self):
         self.conf = NimbusConfManager()

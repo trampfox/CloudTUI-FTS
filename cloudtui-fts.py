@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from cloudtui.cloudtui import CloudTUI
 from managers.manager import Manager
 
@@ -5,7 +6,7 @@ __author__ = 'Davide Monfrecola'
 
 import managers
 import os
-import boto
+#import boto
 import sys
 import signal
 import threading
@@ -17,12 +18,9 @@ import cloudtui
 
 from clonevm import VM      # TODO choose where to put the VM class
 from confmanager.nimbusconfmanager import NimbusConfManager
-from boto.s3.connection import OrdinaryCallingFormat
-from boto.s3.connection import S3Connection
-from boto.ec2.regioninfo import RegionInfo
-#from ssl import SSLSocket
-#from phantomclient.phantomclient import PhantomClient
-#from phantomclient.phantomrequest import PhantomRequest
+# from boto.s3.connection import OrdinaryCallingFormat
+# from boto.s3.connection import S3Connection
+# from boto.ec2.regioninfo import RegionInfo
 from monitors.openstackmonitor import OpenstackMonitor
 from rules.ruleengine import RuleEngine
 from managers.openstack.openstackagent import OpenstackAgent
@@ -36,10 +34,9 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 if __name__ == "__main__":
-    #pr = PhantomRequest()
-    #pr.test()
-    '''cloudTUI = CloudTUI()
-    cloudTUI.start()'''
+    cloudTUI = CloudTUI()
+    cloudTUI.start()
+    '''
     meters_queue = Queue()
     cmd_queue = Queue()
 
@@ -65,5 +62,5 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.pause()
-
+'''
     raw_input("Please enter to exit")
