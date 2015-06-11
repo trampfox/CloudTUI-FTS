@@ -3,7 +3,8 @@ __author__ = 'Davide Monfrecola'
 import boto
 import datetime
 import boto.ec2.cloudwatch
-from managers.manager import Manager
+
+from managers.botomanager import BotoManager
 from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.connection import SubdomainCallingFormat
 from boto.s3.connection import S3Connection

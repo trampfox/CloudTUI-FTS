@@ -6,7 +6,7 @@ from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from boto.ec2.regioninfo import RegionInfo
-from managers.manager import Manager
+from managers.botomanager import BotoManager
 from confmanager.nimbusconfmanager import NimbusConfManager
 from autoscaling.nimbusautoscaling import NimbusAutoScaling
 

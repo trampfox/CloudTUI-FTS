@@ -1,13 +1,9 @@
 __author__ = 'Davide Monfrecola'
 
-import ceilometerclient.client
-
-from managers.manager import Manager
 from confmanager.openstackconfmanager import OpenstackConfManager
-#import novaclient.v2.client as nvclient
 from novaclient.client import Client
 
-class OpenstackManager():
+class OpenstackManager:
 
     def __init__(self):
         self.conf = OpenstackConfManager()

@@ -1,10 +1,6 @@
 #!/usr/bin/python
-from cloudtui.cloudtui import CloudTUI
-from managers.manager import Manager
-
 __author__ = 'Davide Monfrecola'
 
-import managers
 import os
 #import boto
 import sys
@@ -16,6 +12,7 @@ import subprocess
 import time
 import cloudtui
 
+from cloudtui.cloudtui import CloudTUI
 from clonevm import VM      # TODO choose where to put the VM class
 from confmanager.nimbusconfmanager import NimbusConfManager
 # from boto.s3.connection import OrdinaryCallingFormat
