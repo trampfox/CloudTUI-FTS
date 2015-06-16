@@ -258,8 +258,7 @@ class OpenstackManager:
 3) Reboot instance
 4) Terminate instance
 5) Retrieve diagnostic
-6) Exit
-7) TEST Ceilometer\n"""
+6) Exit\n"""
         print(menu_text)
 
         # TODO capire dove mettere
@@ -280,12 +279,7 @@ class OpenstackManager:
             elif choice == 5:
                 self.instance_action("diagnostic")
             elif choice == 6:
-                self.print_all_networks()
-            elif choice == 7:
-                self.ceilometer_test()
-            elif choice == 8:
-                # TODO Remove this test method call
-                self.clone("6aff697a-f8b3-4f1d-b49b-d2d5077ff2db")
+                exit();
             else:
                 raise Exception("Unavailable choice!")
         except Exception as e:
