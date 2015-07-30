@@ -217,7 +217,8 @@ pip-log.txt
 .idea
 
 # Configuration files
-conf/Nimbus
-conf/nimbus
-conf/eucalyptus
-conf/openstack/certs
+#conf/Nimbus
+#conf/nimbus
+#conf/eucalyptus
+#conf/openstack/certs
+conf/*
