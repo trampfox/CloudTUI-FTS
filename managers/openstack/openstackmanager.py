@@ -1,3 +1,9 @@
+from Queue import Queue
+from threading import Thread
+from managers.openstack.openstackagent import OpenstackAgent
+from monitors.openstackmonitor import OpenstackMonitor
+from rules.ruleengine import RuleEngine
+
 __author__ = 'Davide Monfrecola'
 
 from confmanager.openstackconfmanager import OpenstackConfManager
@@ -14,6 +20,10 @@ class OpenstackManager:
         self.security_groups = None
         self.networks = None
         self.instances = None
+        self.os_monitor = None
+        self.rule_engine_monitor = None
+        self.os_agent = None
+        self.os_monitor = None
 
     def get_conf(self):
         return self.conf
@@ -22,12 +32,13 @@ class OpenstackManager:
         """Connection to the endpoint specified in the configuration file"""
         # OpenStack Python SDK #
         try:
-            self.nova = Client(2, self.conf.username,
+            self.nova = Client(2,
+                               self.conf.username,
                                self.conf.password,
                                self.conf.tenant_name,
                                self.conf.auth_url)
 
-            print("[OpenstackManager] Connection successfully established ")
+            print("[OpenstackManager] Client instance successfully created")
         except Exception as e:
             print("Connection error({0})".format(e.message))
 
@@ -249,6 +260,49 @@ class OpenstackManager:
             print("%-10s %-25s %-30s" % (i, network.label, network.id))
             i = i + 1
 
+    def monitor_status(self):
+        if self.os_monitor is not None:
+            print("Monitor enabled\n")
+            self.print_monitored_instances()
+        else:
+            print("Monitor not enabled\n")
+
+    def print_monitored_instances(self):
+        pass
+
+    def start_stop_monitor(self):
+        if self.os_monitor is not None:
+            self.os_monitor.stop()
+            self.rule_engine_monitor.stop()
+            self.os_agent.stop()
+            print("Openstack monitor agent has been stopped")
+        else:
+            print("Starting Openstack monitor...")
+            self.start_monitor()
+
+    def start_monitor(self):
+        meters_queue = Queue()
+        cmd_queue = Queue()
+
+        # resources = self.get_instance_info()
+        # self.os_monitor = OpenstackMonitor(resources=resources, conf=self.conf)
+        # monitor = Thread(target=self.os_monitor.run, args=(meters_queue,))
+        # monitor.setDaemon(True)
+        # monitor.start()
+        #
+        # rule_engine = RuleEngine(resources=resources, cmd_queue=cmd_queue)
+        # self.rule_engine_monitor = Thread(target=rule_engine.run, args=(meters_queue,))
+        # self.rule_engine_monitor.setDaemon(True)
+        # self.rule_engine_monitor.start()
+
+        agent = OpenstackAgent(manager=self)
+        self.os_agent = Thread(target=agent.run, args=(cmd_queue,))
+        self.os_agent.setDaemon(False)
+        self.os_agent.start()
+        # cmd_queue.put({'command': 'stop'})
+
+    def stop_monitor(self):
+        pass
 
     def show_menu(self):
         menu_text = """\nWhat would you like to do?
@@ -258,7 +312,10 @@ class OpenstackManager:
 3) Reboot instance
 4) Terminate instance
 5) Retrieve diagnostic
-6) Exit\n"""
+6) Start/stop monitor
+7) Monitor status
+8) Exit
+\n"""
         print(menu_text)
 
         # TODO capire dove mettere
@@ -279,7 +336,11 @@ class OpenstackManager:
             elif choice == 5:
                 self.instance_action("diagnostic")
             elif choice == 6:
-                exit();
+                self.start_stop_monitor()
+            elif choice == 7:
+                self.monitor_status()
+            elif choice == 8:
+                 exit(0)
             else:
                 raise Exception("Unavailable choice!")
         except Exception as e:

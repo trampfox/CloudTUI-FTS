@@ -27,13 +27,17 @@ class OpenstackMonitor(Monitor):
                                                               os_password=self.conf.ceilometer_password,
                                                               os_tenant_name=self.conf.ceilometer_tenant_name,
                                                               os_auth_url=self.conf.ceilometer_auth)
-
+            self.signal = True
         except Exception as e:
             print("An error occurred: {0}".format(e.message))
         pass
 
+    def set_stop_signal(self, command):
+        print("[Openstack monitor] Set signal to False")
+        self.signal = False
+
     def run(self, meters_queue):
-        while True:
+        while self.signal:
             # TODO call celiometer service and get samples for each available resource
             for resource in self.resources:
                 #print("[OpenstackMonitor] Check resource {0}".format(str(resource["id"])))
@@ -56,7 +60,7 @@ class OpenstackMonitor(Monitor):
                 dict(field='resource_id', op='eq', value=resource_id)
             ]
             # get last sample of meter <meter> for the resource with id <resource_id>
-            print("get cpu_util value for resource {0}".format(resource_id))
+            #print("get cpu_util value for resource {0}".format(resource_id))
             samples_list = self.cclient.samples.list(meter_name=meter, limit=limit, q=query)
 
             for sample in samples_list:
