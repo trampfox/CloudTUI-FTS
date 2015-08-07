@@ -30,4 +30,10 @@ class OpenstackConfManager(ConfManager):
         self.ceilometer_password = self.parser.get('openstack', 'os_ceilometer_password')
         self.ceilometer_tenant_name = self.parser.get('openstack', 'os_ceilometer_tenant_name')
 
+        if self.auth_url == "":
+            self.get_auth_url()
+
         #print("Login data read!")
+
+    def get_auth_url(self):
+        self.auth_url = raw_input("Please insert auth url: ")

@@ -29,5 +29,5 @@ class ConfManager():
 
     def read_options(self):
         """Read options values from [option] section"""
-        self.validate_certs = self.parser.get('options', 'validate_certs')
-        self.terminal = self.parser.get('options', 'terminal')
+        #self.validate_certs = self.parser.get('options', 'validate_certs')
+        #self.terminal = self.parser.get('options', 'terminal')
