@@ -1,4 +1,5 @@
 from Queue import Queue
+import logging
 from threading import Thread
 from managers.openstack.openstackagent import OpenstackAgent
 from monitors.openstackmonitor import OpenstackMonitor
@@ -38,9 +39,9 @@ class OpenstackManager:
                                self.conf.tenant_name,
                                self.conf.auth_url)
 
-            print("[OpenstackManager] Client instance successfully created")
+            logging.debug("Client instance successfully created")
         except Exception as e:
-            print("Connection error({0})".format(e.message))
+            logging.error("Connection error({0})".format(e.message))
 
         # end OpenStack Python SDK #
 
@@ -272,11 +273,10 @@ class OpenstackManager:
 
     def start_stop_monitor(self):
         if self.os_monitor is not None:
-            self.os_monitor.stop()
-            self.rule_engine_monitor.stop()
-            self.os_agent.stop()
+            self.stop_monitor()
             print("Openstack monitor agent has been stopped")
         else:
+            logging.debug("Monitor not enabled, starting threads")
             print("Starting Openstack monitor...")
             self.start_monitor()
 
@@ -284,25 +284,32 @@ class OpenstackManager:
         meters_queue = Queue()
         cmd_queue = Queue()
 
-        # resources = self.get_instance_info()
-        # self.os_monitor = OpenstackMonitor(resources=resources, conf=self.conf)
-        # monitor = Thread(target=self.os_monitor.run, args=(meters_queue,))
-        # monitor.setDaemon(True)
-        # monitor.start()
-        #
-        # rule_engine = RuleEngine(resources=resources, cmd_queue=cmd_queue)
-        # self.rule_engine_monitor = Thread(target=rule_engine.run, args=(meters_queue,))
-        # self.rule_engine_monitor.setDaemon(True)
-        # self.rule_engine_monitor.start()
+        resources = self.get_instance_info()
+        self.os_monitor = OpenstackMonitor(resources=resources, conf=self.conf)
+        monitor = Thread(target=self.os_monitor.run, args=(meters_queue,))
+        monitor.setDaemon(True)
+        monitor.start()
+        logging.info("OpenstackMonitor thread started")
+
+        rule_engine = RuleEngine(resources=resources, cmd_queue=cmd_queue)
+        self.rule_engine_monitor = Thread(target=rule_engine.run, args=(meters_queue,))
+        self.rule_engine_monitor.setDaemon(True)
+        self.rule_engine_monitor.start()
+        logging.info("RuleEngine thread started")
 
         agent = OpenstackAgent(manager=self)
         self.os_agent = Thread(target=agent.run, args=(cmd_queue,))
-        self.os_agent.setDaemon(False)
+        self.os_agent.setDaemon(True)
         self.os_agent.start()
+        logging.info("OpenstackAgent thread started")
         # cmd_queue.put({'command': 'stop'})
 
     def stop_monitor(self):
-        pass
+        logging.debug("Monitor enabled, stopping threads")
+        self.os_monitor.stop()
+        self.rule_engine_monitor.stop()
+        self.os_agent.stop()
+        logging.info("Monitor agents have been stopped")
 
     def show_menu(self):
         menu_text = """\nWhat would you like to do?
@@ -318,8 +325,7 @@ class OpenstackManager:
 \n"""
         print(menu_text)
 
-        # TODO capire dove mettere
-        #self.connect()
+        logging.info("CloudTUI-fts Openstack manager started")
 
         try:
             # user input

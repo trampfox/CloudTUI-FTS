@@ -1,3 +1,5 @@
+import logging
+
 __author__ = 'Davide Monfrecola'
 
 from confmanager import ConfManager
@@ -17,7 +19,7 @@ class OpenstackConfManager(ConfManager):
         self.read_login_data()
 
     def read_login_data(self):
-        """Read login data from login.txt file"""
+        """Read login data from login.conf file"""
         # OpenStack Python SDK #
         try:
             self.auth_url = self.parser.get('openstack', 'os_auth_url')
@@ -42,7 +44,7 @@ class OpenstackConfManager(ConfManager):
         self.ceilometer_username = self.parser.get('openstack', 'os_ceilometer_username')
         self.ceilometer_password = self.parser.get('openstack', 'os_ceilometer_password')
         self.ceilometer_tenant_name = self.parser.get('openstack', 'os_ceilometer_tenant_name')
-        #print("Login data read!")
+        logging.debug("Openstack configuration read")
 
     def get_auth_url(self):
         print("## Auth URL not found in configuration")

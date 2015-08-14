@@ -6,6 +6,7 @@ import datetime
 import monitoringutils
 import time
 import ceilometerclient.client
+import logging
 
 from random import randint
 from sqlitemanager import SqliteConnector
@@ -29,18 +30,19 @@ class OpenstackMonitor(Monitor):
                                                               os_auth_url=self.conf.ceilometer_auth)
             self.signal = True
         except Exception as e:
-            print("An error occurred: {0}".format(e.message))
+            logging.error("An error occurred: {0}".format(e.message))
         pass
 
     def set_stop_signal(self, command):
-        print("[Openstack monitor] Set signal to False")
+        logging.debug("Set signal to False")
         self.signal = False
 
     def run(self, meters_queue):
         while self.signal:
+            logging.info("Monitor thread started")
             # TODO call celiometer service and get samples for each available resource
             for resource in self.resources:
-                #print("[OpenstackMonitor] Check resource {0}".format(str(resource["id"])))
+                logging.debug("[OpenstackMonitor] Check resource {0}".format(str(resource["id"])))
                 # insert [resource id, value] list into the meters list
                 samples = self.get_samples(resource_id=resource["id"], limit=1)
                 #### TEST values ####
@@ -50,6 +52,7 @@ class OpenstackMonitor(Monitor):
                      'value': randint(80, 150)}
                 ]'''
                 for sample in samples:
+                    logging.debug("")
                     meters_queue.put(sample)
             time.sleep(7)
 

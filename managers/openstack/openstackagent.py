@@ -13,14 +13,15 @@ class OpenstackAgent:
         while self.signal:
             try:
                 command = cmd_queue.get()
-                print("[Openstack agent] Command received: " + str(command))
+                logging.debug("Command received: " + str(command))
 
                 self.execute_command(command)
             except Exception, e:
-                print("Error %s:" % e.args[0])
+                logging.error("Error %s:" % e.args[0])
+                print("An error occured. Please see logs for more information")
 
     def set_stop_signal(self, command):
-        print("[Openstack agent] Set signal to False")
+        logging.debug("Set signal to False")
         self.signal = False
 
     def get_action_method(self, action):
@@ -30,5 +31,6 @@ class OpenstackAgent:
         }[action]
 
     def execute_command(self, command):
+        logging.debug("Executing command {0}".format(command))
         action_method = self.get_action_method(command['command'])
         action_method(command)

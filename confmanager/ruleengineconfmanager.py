@@ -19,7 +19,7 @@ class RuleEngineConfManager(ConfManager):
         """Read login data from login.txt file"""
         # boto #
         # TODO adattare a ruleengine/conf.txt
-        print("Login data read!")
+
 
     def get_repository_host(self):
         return

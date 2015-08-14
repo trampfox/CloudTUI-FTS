@@ -1,3 +1,5 @@
+import logging
+
 __author__ = 'Davide Monfrecola'
 
 from monitors.sqlitemanager import SqliteConnector
@@ -24,24 +26,25 @@ class RuleEngine():
         creates a new instance of Resource for each
         resource in self.resources
         '''
+        logging.debug("Initializing rule engine resources")
         for resource in self.resource_info:
             self.resources[resource['id']] = Resource(resource_id=resource["id"],
                                                       name=resource["name"],
                                                       command_queue=self.cmd_queue)
-            print("[RuleEngine] Add resource {0} as fact".format(resource["name"]))
+            logging.info("Add resource {0} as fact".format(resource["name"]))
             self.my_intellect.learn(self.resources[resource['id']])
 
     def add_instance(self, resource):
         self.resources[resource['id']] = Resource(resource_id=resource["id"],
                                                   name=resource["name"],
                                                   command_queue=self.cmd_queue)
-        print("[RuleEngine] Add resource {0} as fact".format(resource["name"]))
+        logging.info("Add resource {0} as fact".format(resource["name"]))
         self.my_intellect.learn(self.resources[resource['id']])
 
 
     def read_policies(self):
         policy_a = self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/openstack.policy"))
-        #print("[RuleEngine] Openstack policy loaded")
+        logging.info("Openstack policy loaded")
         # TEST
         # TODO gestione agenda groups
         self.agenda_groups.append("cpu")
@@ -50,11 +53,12 @@ class RuleEngine():
     def run(self, meters_queue):
         self.init_resources()
         self.read_policies()
+        logging.info("Rule engine initialization completed")
         while True:
             try:
                 element = meters_queue.get()
-                print("[RuleEngine] Value received for resource {0}"
-                       .format(str(element)))
+                logging.info("[RuleEngine] Value received for resource {0}".format(str(element)))
+                logging.debug("Add sample: {0}".format(element))
 
                 self.resources[element["resource_id"]].add_sample(meter=element["meter"],
                                                                   value=element["value"],
@@ -63,10 +67,11 @@ class RuleEngine():
                 self.check_policies()
 
             except Exception, e:
-                print("[RuleEngine] Error %s" % e.args[0])
-                print(sys.exc_info()[0].__name__)
-                print(os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename))
-                print(sys.exc_info()[2].tb_lineno)
+                logging.error("An error occured: %s" % e.args[0])
+                # print(sys.exc_info()[0].__name__)
+                # print(os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename))
+                # print(sys.exc_info()[2].tb_lineno)
 
     def check_policies(self):
+        logging.debug("Check policies (call reason method)")
         self.my_intellect.reason(self.agenda_groups)
