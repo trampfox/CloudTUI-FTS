@@ -25,6 +25,7 @@ class OpenstackManager:
         self.rule_engine_monitor = None
         self.os_agent = None
         self.os_monitor = None
+        self.cloned_instances = {}
 
     def get_conf(self):
         return self.conf
@@ -142,7 +143,7 @@ class OpenstackManager:
     def print_all_instances(self):
         """Print instance id, image id, public DNS and state for each active instance"""
         print("--- Instances ---")
-        print("%-10s %-25s %-25s %-25s %-70s %-20s" % ("-", "Name", "Created", "Key name", "Private IP Address", "Status"))
+        print("%-10s %-25s %-25s %-25s %-45s %-20s" % ("-", "Name", "Created", "Key name", "Private IP Address", "Status"))
         self.instances = self.nova.servers.list()
 
         if len(self.instances) == 0:
@@ -150,7 +151,7 @@ class OpenstackManager:
         else:
             i = 1
             for instance in self.instances:
-                print("%-10s %-25s %-25s %-25s %-70s %-20s" % (i, instance.name, instance._info['created'],
+                print("%-10s %-25s %-25s %-25s %-45s %-20s" % (i, instance.name, instance._info['created'],
                                                                instance._info['key_name'], instance.networks,
                                                                instance.status))
                 i += 1
@@ -193,6 +194,8 @@ class OpenstackManager:
                                             key_name=instance._info['key_name'],
                                             security_groups=security_groups,
                                             nics=nics)
+
+        
 
     def print_all_images(self):
         """
