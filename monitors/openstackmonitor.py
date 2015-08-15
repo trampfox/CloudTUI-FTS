@@ -33,14 +33,14 @@ class OpenstackMonitor(Monitor):
             logging.error("An error occurred: {0}".format(e.message))
         pass
 
-    def set_stop_signal(self, command):
+    def set_stop_signal(self):
         logging.debug("Set signal to False")
         self.signal = False
 
     def run(self, meters_queue):
         while self.signal:
             logging.info("Monitor thread started")
-            # TODO call celiometer service and get samples for each available resource
+
             for resource in self.resources:
                 logging.debug("[OpenstackMonitor] Check resource {0}".format(str(resource["id"])))
                 # insert [resource id, value] list into the meters list
@@ -52,9 +52,10 @@ class OpenstackMonitor(Monitor):
                      'value': randint(80, 150)}
                 ]'''
                 for sample in samples:
-                    logging.debug("")
+                    # logging.debug("")
                     meters_queue.put(sample)
-            time.sleep(7)
+            # TODO put sleep time in constant file
+            time.sleep(5)
 
     def get_samples(self, resource_id, limit):
         samples = []
@@ -63,7 +64,6 @@ class OpenstackMonitor(Monitor):
                 dict(field='resource_id', op='eq', value=resource_id)
             ]
             # get last sample of meter <meter> for the resource with id <resource_id>
-            #print("get cpu_util value for resource {0}".format(resource_id))
             samples_list = self.cclient.samples.list(meter_name=meter, limit=limit, q=query)
 
             for sample in samples_list:
@@ -73,9 +73,8 @@ class OpenstackMonitor(Monitor):
                     "timestamp": sample.timestamp,
                     "value": sample.counter_volume
                 })
-            #print("timestamp: {0} - volume: {1}".format(sample[0]["timestamp"], sample[0]["counter_volume"]))
-            # TODO vedere che cosa ci può essere di interessante tra le statistiche
-            #print("get statistics for resource {0}".format(resource_id))
-            #statistics = self.cclient.statistics.list(meter_name=meter, q=query)
-            #print(str(statistics))
+
         return samples
+
+    def stop(self):
+        self.set_stop_signal()

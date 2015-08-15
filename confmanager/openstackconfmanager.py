@@ -44,6 +44,8 @@ class OpenstackConfManager(ConfManager):
         self.ceilometer_username = self.parser.get('openstack', 'os_ceilometer_username')
         self.ceilometer_password = self.parser.get('openstack', 'os_ceilometer_password')
         self.ceilometer_tenant_name = self.parser.get('openstack', 'os_ceilometer_tenant_name')
+
+        self.clone_wait_time_ms = float(self.parser.get('options', 'clone_wait_time_ms'))
         logging.debug("Openstack configuration read")
 
     def get_auth_url(self):

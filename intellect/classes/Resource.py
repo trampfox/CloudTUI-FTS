@@ -1,3 +1,5 @@
+import logging
+
 __author__ = 'Davide Monfrecola'
 
 from monitors.monitoringutils import ema
@@ -12,7 +14,7 @@ class Resource(object):
         self._command_queue = command_queue
         self._cloned = False
 
-        print "created an instance of Resource (id: {0})".format(self.resource_id)
+        logging.debug("created an instance of Resource (id: {0})".format(self.resource_id))
 
     @property
     def resource_id(self):
@@ -52,8 +54,9 @@ class Resource(object):
             return None
 
     def clone(self):
-        if self._cloned == False:
-            self._command_queue.put({'command': 'clone', 'resource_id': self._resource_id})
-            self._cloned = True
-        else:
-            print "*** Instance already cloned ***"
+        self._command_queue.put({'command': 'clone', 'resource_id': self._resource_id})
+        # if self._cloned == False:
+        #
+        #     self._cloned = True
+        # else:
+        #     print "*** Instance already cloned ***"

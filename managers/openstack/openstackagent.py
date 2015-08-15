@@ -6,7 +6,6 @@ class OpenstackAgent:
 
     def __init__(self, manager):
         self.manager = manager
-        #self.manager.connect()
         self.signal = True
 
     def run(self, cmd_queue):
@@ -20,7 +19,7 @@ class OpenstackAgent:
                 logging.error("Error %s:" % e.args[0])
                 print("An error occured. Please see logs for more information")
 
-    def set_stop_signal(self, command):
+    def set_stop_signal(self):
         logging.debug("Set signal to False")
         self.signal = False
 
@@ -33,4 +32,7 @@ class OpenstackAgent:
     def execute_command(self, command):
         logging.debug("Executing command {0}".format(command))
         action_method = self.get_action_method(command['command'])
-        action_method(command)
+        action_method(command['resource_id'])
+
+    def stop(self):
+        self.set_stop_signal()

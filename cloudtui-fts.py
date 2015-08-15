@@ -15,7 +15,8 @@ if __name__ == "__main__":
     logging.basicConfig(filename='logs/cloudtui-fts.log',
                         format="%(levelname)s::%(asctime)s - %(module)s(line %(lineno)d) : %(message)s",
                         datefmt='%m/%d/%Y %I:%M:%S %p',
-                        level=logging.DEBUG)
+                        level=logging.DEBUG,
+                        filemode='a')
 
     cloudTUI = CloudTUI()
     cloudTUI.start()

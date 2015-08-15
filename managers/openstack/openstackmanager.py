@@ -1,6 +1,7 @@
 from Queue import Queue
 import logging
 from threading import Thread
+import time
 from managers.openstack.openstackagent import OpenstackAgent
 from monitors.openstackmonitor import OpenstackMonitor
 from rules.ruleengine import RuleEngine
@@ -25,7 +26,7 @@ class OpenstackManager:
         self.rule_engine_monitor = None
         self.os_agent = None
         self.os_monitor = None
-        self.cloned_instances = {}
+        self.instances_cloned_time = {}
 
     def get_conf(self):
         return self.conf
@@ -161,41 +162,58 @@ class OpenstackManager:
         Create a new instance that is a clone of the instance with the instance ID
         passed as parameter
         '''
-        instance = self.nova.servers.get(instance_id)
 
-        if self.networks is None:
-            self.networks = self.nova.networks.list()
+        if instance_id not in self.instances_cloned_time:
+            self.instances_cloned_time[instance_id] = 0
 
-        nics = []
-        for net_id in instance._info['addresses'].keys():
-            for network in self.networks:
-                if network.label == net_id:
-                    nics.append({"net-id": network.id})
+        ''' Check if the instance the "not clone" time is passed '''
+        if self.is_clonable(self.instances_cloned_time[instance_id]):
+            instance = self.nova.servers.get(instance_id)
 
-        security_groups = []
-        for security_group in instance._info['security_groups']:
-            security_groups.append(security_group['name'])
+            if self.networks is None:
+                self.networks = self.nova.networks.list()
 
-        print("")
-        print("*" * 80)
-        print("Cloning the instance {0}...".format(instance_id))
-        print("name: " + instance.name + "-clone")
-        print("image id: " + str(instance._info['image']['id']))
-        print("flavor id: " + str(instance._info['flavor']['id']))
-        print("key name: " + str(instance._info['key_name']))
-        print("sec groups: " + str(security_groups))
-        print("nics: " + str(nics))
-        print("*" * 80)
-        print("")
+            nics = []
+            for net_id in instance._info['addresses'].keys():
+                for network in self.networks:
+                    if network.label == net_id:
+                        nics.append({"net-id": network.id})
 
-        instance = self.nova.servers.create(name=instance.name + "-clone",
-                                            image=instance._info['image']['id'],
-                                            flavor=instance._info['flavor']['id'],
-                                            key_name=instance._info['key_name'],
-                                            security_groups=security_groups,
-                                            nics=nics)
+            security_groups = []
+            for security_group in instance._info['security_groups']:
+                security_groups.append(security_group['name'])
 
-        
+            clone_str = "\n\n"
+            clone_str += "*" * 80 + "\n"
+            clone_str += "Cloning the instance {0}...\n".format(instance_id)
+            clone_str += "name: " + instance.name + "-clone\n"
+            clone_str += "image id: " + str(instance._info['image']['id']) + "\n"
+            clone_str += "flavor id: " + str(instance._info['flavor']['id']) + "\n"
+            clone_str += "key name: " + str(instance._info['key_name']) + "\n"
+            clone_str += "sec groups: " + str(security_groups) + "\n"
+            clone_str += "nics: " + str(nics) + "\n"
+            clone_str += "*" * 80 + "\n\n"
+
+            instance = self.nova.servers.create(name=instance.name + "-clone",
+                                                image=instance._info['image']['id'],
+                                                flavor=instance._info['flavor']['id'],
+                                                key_name=instance._info['key_name'],
+                                                security_groups=security_groups,
+                                                nics=nics)
+
+            self.instances_cloned_time[instance_id] = time.time()
+            logging.info("Instance {0} cloned".format(instance_id))
+            logging.info(clone_str)
+        else:
+            logging.info("Instance {0} not clonable, clone wait time not elapsed".format(instance_id))
+
+    def is_clonable(self, last_instance_cloned_time):
+        now = time.time()
+
+        if (now - last_instance_cloned_time) > self.conf.clone_wait_time_ms:
+          return True
+        else:
+          return False
 
     def print_all_images(self):
         """
@@ -277,6 +295,9 @@ class OpenstackManager:
     def start_stop_monitor(self):
         if self.os_monitor is not None:
             self.stop_monitor()
+            self.os_monitor = None
+            self.rule_engine_monitor = None
+            self.os_agent = None
             print("Openstack monitor agent has been stopped")
         else:
             logging.debug("Monitor not enabled, starting threads")
@@ -294,25 +315,26 @@ class OpenstackManager:
         monitor.start()
         logging.info("OpenstackMonitor thread started")
 
-        rule_engine = RuleEngine(resources=resources, cmd_queue=cmd_queue)
-        self.rule_engine_monitor = Thread(target=rule_engine.run, args=(meters_queue,))
-        self.rule_engine_monitor.setDaemon(True)
-        self.rule_engine_monitor.start()
+        self.rule_engine_monitor = RuleEngine(resources=resources, cmd_queue=cmd_queue)
+        rule_engine_thread = Thread(target=self.rule_engine_monitor.run, args=(meters_queue,))
+        rule_engine_thread.setDaemon(True)
+        rule_engine_thread.start()
         logging.info("RuleEngine thread started")
 
-        agent = OpenstackAgent(manager=self)
-        self.os_agent = Thread(target=agent.run, args=(cmd_queue,))
-        self.os_agent.setDaemon(True)
-        self.os_agent.start()
+        self.os_agent = OpenstackAgent(manager=self)
+        os_agent_thread = Thread(target=self.os_agent.run, args=(cmd_queue,))
+        os_agent_thread.setDaemon(True)
+        os_agent_thread.start()
         logging.info("OpenstackAgent thread started")
         # cmd_queue.put({'command': 'stop'})
 
     def stop_monitor(self):
-        logging.debug("Monitor enabled, stopping threads")
-        self.os_monitor.stop()
-        self.rule_engine_monitor.stop()
-        self.os_agent.stop()
-        logging.info("Monitor agents have been stopped")
+        if self.os_monitor is not None:
+            logging.debug("Monitor enabled, stopping threads")
+            self.os_monitor.stop()
+            self.rule_engine_monitor.stop()
+            self.os_agent.stop()
+            logging.info("Monitor agents have been stopped")
 
     def show_menu(self):
         menu_text = """\nWhat would you like to do?
@@ -327,8 +349,6 @@ class OpenstackManager:
 8) Exit
 \n"""
         print(menu_text)
-
-        logging.info("CloudTUI-fts Openstack manager started")
 
         try:
             # user input
@@ -349,7 +369,8 @@ class OpenstackManager:
             elif choice == 7:
                 self.monitor_status()
             elif choice == 8:
-                 exit(0)
+                self.stop_monitor()
+                exit(0)
             else:
                 raise Exception("Unavailable choice!")
         except Exception as e:

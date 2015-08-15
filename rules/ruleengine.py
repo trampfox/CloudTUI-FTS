@@ -20,6 +20,7 @@ class RuleEngine():
         self.resources = {}
         self.my_intellect = Intellect()
         self.agenda_groups = []
+        self.signal = True
 
     def init_resources(self):
         '''
@@ -43,7 +44,7 @@ class RuleEngine():
 
 
     def read_policies(self):
-        policy_a = self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/openstack.policy"))
+        self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/openstack.policy"))
         logging.info("Openstack policy loaded")
         # TEST
         # TODO gestione agenda groups
@@ -54,7 +55,8 @@ class RuleEngine():
         self.init_resources()
         self.read_policies()
         logging.info("Rule engine initialization completed")
-        while True:
+
+        while self.signal:
             try:
                 element = meters_queue.get()
                 logging.info("[RuleEngine] Value received for resource {0}".format(str(element)))
@@ -68,10 +70,13 @@ class RuleEngine():
 
             except Exception, e:
                 logging.error("An error occured: %s" % e.args[0])
-                # print(sys.exc_info()[0].__name__)
-                # print(os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename))
-                # print(sys.exc_info()[2].tb_lineno)
 
     def check_policies(self):
         logging.debug("Check policies (call reason method)")
         self.my_intellect.reason(self.agenda_groups)
+
+    def set_stop_signal(self):
+        self.signal = False
+
+    def stop(self):
+        self.set_stop_signal()
