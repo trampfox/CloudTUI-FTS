@@ -27,6 +27,7 @@ class OpenstackManager:
         self.os_agent = None
         self.os_monitor = None
         self.instances_cloned_time = {}
+        self.cloned_instances = {}
 
     def get_conf(self):
         return self.conf
@@ -123,7 +124,13 @@ class OpenstackManager:
                 self.nova.servers.reboot(self.instances[instance_index - 1])
                 print("Instance rebooted")
             elif action == "delete":
-                self.nova.servers.delete(self.instances[instance_index - 1])
+                instance_id = self.instances[instance_index - 1]
+                self.nova.servers.delete(instance_id)
+
+                # if the instance is a clone, remove from the cloned instances list
+                if instance_id in self.cloned_instances:
+                    del self.cloned_instances[instance_id]
+                  
                 print("Instance terminated")
             elif action == "diagnostic":
                 diagnostics = self.nova.servers.diagnostics(self.instances[instance_index - 1])
@@ -202,6 +209,7 @@ class OpenstackManager:
                                                 nics=nics)
 
             self.instances_cloned_time[instance_id] = time.time()
+            self.cloned_instances.append(instance.id)
             logging.info("Instance {0} cloned".format(instance_id))
             logging.info(clone_str)
         else:
