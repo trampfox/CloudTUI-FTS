@@ -14,12 +14,33 @@ Massimo Canonico
 massimo.canonico@unipmn.it
 
 ### Description
-CloudTUI-FTS is a tool that helps cloud users to manage workspaces in Nimbus. <br/>
-With this tool the user can easily create/delete/monitor his workspaces and moreover, it is possible to specify policy in order to decide when scale-up/scale-down the system. <br/>
-More details in "Scale-up and scale-down" paragraph. CloudTUI-FTS is written in python and uses boto libraries.
+Cloud Text User Interface - Fault Tolerant Scalable (CloudTUI-FTS)
+is text user interface able to interact with multiple
+cloud platforms (such as OpenStack, Eucalytus, ...).
 
-Please note that CloudTUI-FTS is still in **beta** version. <br/>
-Some of the features could not work properly. We are working right now on fixing all bugs. <br/>
-Of course, we would be happy if you give a try to your software out and let us know what you think.
+With CloudTUI-FTS, a user can:
+- start/stop/clone a VM
+- monitor the VM health status
+- create/manage policies in order to prevent faults (i.e.,
+"if the CPU utilization is higher than XX %, then clone it")
+
+CloudTUI-FTS is an open source project written in python,
+free available under GPL v.3 license.
+
+		----
+Quick start:
+
+0.) Install the required libraries
+	0.a) boto (the following command should work on most 
+			of the linux distos:
+	 		"sudo pip install boto")
+	0.b) python-novaclient ("sudo pip install pythom-novaclient")
+	0.c) python-ceilometerclient ("sudo pip install python-ceilometerclient")
+	0.d) antlr3 ("sudo pip install http://www.antlr3.org/download/Python/antlr_python_runtime-3.1.3.tar.gz") 
+
+
+1.) Download the source code from git repository by using one of the following tw methods:
+	1.a) git clone https://github.com/trampfox/CloudTUI-advanced.git
+	1.b) wget https://github.com/trampfox/CloudTUI-advanced/archive/master.zip
 
 For support or any comment: massimo.canonico@unipmn.it
