@@ -11,7 +11,7 @@ Department of Science and Innovation Technology (DiSIT) - University of Piemonte
 Massimo Canonico
 
 ### Contact info
-massimo.canonico@unipmn.it
+massimo.canonico@uniupo.it
 
 ### Description
 Cloud Text User Interface - Fault Tolerant Scalable (CloudTUI-FTS)
@@ -41,4 +41,4 @@ Quick start:
   1. git clone https://github.com/trampfox/CloudTUI-advanced.git
   2. wget https://github.com/trampfox/CloudTUI-advanced/archive/master.zip
 
-For support or any comment: massimo.canonico@unipmn.it
+For support or any comment: massimo.canonico@uniupo.it
