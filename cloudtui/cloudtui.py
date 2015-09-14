@@ -11,7 +11,7 @@ class CloudTUI:
         pass
 
     def start(self):
-      constructor = self.show_menu()
+        constructor = self.show_menu()
         # Create a new instance according to user platform selection
         manager = constructor()
         manager.connect()
