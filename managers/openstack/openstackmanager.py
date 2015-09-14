@@ -2,9 +2,11 @@ from Queue import Queue
 import logging
 from threading import Thread
 import time
+
 from managers.openstack.openstackagent import OpenstackAgent
 from monitors.openstackmonitor import OpenstackMonitor
 from rules.ruleengine import RuleEngine
+
 
 __author__ = 'Davide Monfrecola'
 
@@ -130,7 +132,7 @@ class OpenstackManager:
                 # if the instance is a clone, remove from the cloned instances list
                 if instance_id in self.cloned_instances:
                     del self.cloned_instances[instance_id]
-                  
+
                 print("Instance terminated")
             elif action == "diagnostic":
                 diagnostics = self.nova.servers.diagnostics(self.instances[instance_index - 1])
@@ -292,13 +294,17 @@ class OpenstackManager:
 
     def monitor_status(self):
         if self.os_monitor is not None:
-            print("Monitor enabled\n")
+          print("\n\n\033[92mMonitor enabled\033[0m\n\n")
             self.print_monitored_instances()
+          self.print_active_rules()
         else:
-            print("Monitor not enabled\n")
+          print("\n\n\033[93mMonitor not enabled\033[0m\n\n")
 
     def print_monitored_instances(self):
         pass
+
+    def print_active_rules(self):
+      self.rule_engine_monitor.print_policies()
 
     def start_stop_monitor(self):
         if self.os_monitor is not None:
@@ -306,11 +312,12 @@ class OpenstackManager:
             self.os_monitor = None
             self.rule_engine_monitor = None
             self.os_agent = None
-            print("Openstack monitor agent has been stopped")
+            print("\n\033[94mOpenstack monitor agent has been stopped\033[0m\n")
         else:
             logging.debug("Monitor not enabled, starting threads")
-            print("Starting Openstack monitor...")
+            print("\nStarting Openstack monitor...")
             self.start_monitor()
+            print("\n\033[92mOpenstack monitor has been started\033[0m\n")
 
     def start_monitor(self):
         meters_queue = Queue()

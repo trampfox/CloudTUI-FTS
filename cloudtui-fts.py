@@ -6,6 +6,7 @@ import logging
 
 from cloudtui.cloudtui import CloudTUI
 
+
 def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')
     sys.exit(0)
@@ -24,4 +25,3 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     signal.pause()
 '''
-    # raw_input("Please enter to exit")

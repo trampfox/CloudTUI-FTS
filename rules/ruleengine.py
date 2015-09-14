@@ -2,13 +2,9 @@ import logging
 
 __author__ = 'Davide Monfrecola'
 
-from monitors.sqlitemanager import SqliteConnector
 from intellect.Intellect import Intellect
-from intellect.Intellect import Callable
 from intellect.classes.Resource import Resource
 
-import sys
-import os
 
 class RuleEngine():
     """Rule engine that are used to manage all the rules associated with a
@@ -80,3 +76,33 @@ class RuleEngine():
 
     def stop(self):
         self.set_stop_signal()
+
+    def print_policies(self):
+      # for importStmt in  self.my_intellect.policy.importStmts:
+      # print importStmt
+
+      print "\033[1m\033[4mActive rules\033[0m"
+
+      for ruleStmt in self.my_intellect.policy.ruleStmts:
+        print "-" * 80
+        print "\033[1mid: \033[0m"
+        print ruleStmt.id
+        print "\033[1magenda group: \033[0m"
+        print ruleStmt.agenda_group_id
+        print "\n\033[1mattributes: \033[0m"
+
+        for attributeStmt in self.my_intellect.policy.attributeStmts:
+          print "\t" + str(attributeStmt)
+
+        print "\n\033[1mwhen: \033[0m"
+        print "\t" + str(ruleStmt.when.ruleCondition)
+        print "\n\033[1mthen: \033[0m"
+
+        for action in ruleStmt.then.actions:
+          print "\t" + str(action.action)
+
+        print "-" * 80
+        print "\n"
+
+        # for attributeStmt in self.my_intellect.policy.attributeStmts:
+        #   print attributeStmt
