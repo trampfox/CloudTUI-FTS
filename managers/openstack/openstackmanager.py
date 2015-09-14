@@ -294,11 +294,11 @@ class OpenstackManager:
 
     def monitor_status(self):
         if self.os_monitor is not None:
-          print("\n\n\033[92mMonitor enabled\033[0m\n\n")
+            print("\n\n\033[92mMonitor enabled\033[0m\n\n")
             self.print_monitored_instances()
-          self.print_active_rules()
+            self.print_active_rules()
         else:
-          print("\n\n\033[93mMonitor not enabled\033[0m\n\n")
+            print("\n\n\033[93mMonitor not enabled\033[0m\n\n")
 
     def print_monitored_instances(self):
         pass
