@@ -1,6 +1,8 @@
-__author__ = 'Davide Monfrecola'
+from managers.eucalyptus.eucalyptusmanager import EucalyptusManager
+from managers.nimbus.nimbusmanager import NimbusManager
+from managers.openstack.openstackmanager import OpenstackManager
 
-import json
+__author__ = 'Davide Monfrecola'
 
 
 class CloudTUI:
@@ -9,12 +11,9 @@ class CloudTUI:
         pass
 
     def start(self):
-        platform_selected = self.show_menu()
-        #platform_selected = ['', 'nimbus']
+      constructor = self.show_menu()
         # Create a new instance according to user platform selection
-        constructor = globals()[str(platform_selected[1])]
         manager = constructor()
-
         manager.connect()
 
         while(True):
@@ -26,31 +25,25 @@ class CloudTUI:
         print("CloudTUI-fts")
         print("Please select the Cloud platform that you want to use:")
 
-        try:
-            with open("platforms.txt", "r") as platforms_file:
-                content = platforms_file.read()
-        except IOError:
-            print("Bad platforms configuration file. Program Terminated.")
-            kill = True
-            exit()
-        # load available platforms from json config file
-        platform_available = json.loads(content)
-
-        i = 1
-        # show available platforms
-        for (platform_name, platform_manager) in platform_available.items():
-            print(str(i) + ") " + platform_name)
-            i += 1
+        print("1) OpenStack")
+        print("2) Nimbus")
+        print("3) Eucalyptus")
 
         while True:
             try:
                 # user input
                 print("Please make a choice: ")
                 choice = input()
-                platform_selected = platform_available.items()[choice - 1]
+                constructor = self.get_constructor(choice)
                 break
             except Exception:
                 print("Unavailable choice!")
 
+        return constructor
 
-        return platform_selected
+    def get_constructor(self, platform):
+      return {
+        3: NimbusManager,
+        2: EucalyptusManager,
+        1: OpenstackManager
+      }[platform]
