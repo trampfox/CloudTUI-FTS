@@ -27,7 +27,6 @@ With CloudTUI-FTS, a user can:
 CloudTUI-FTS is an open source project written in python,
 free available under GPL v.3 license.
 
-		----
 ### Quick start:
 
 0. Requirements
