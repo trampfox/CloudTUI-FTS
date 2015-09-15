@@ -53,7 +53,7 @@ free available under GPL v.3 license.
 
 4. The basic setup in now completed. You can run cloudtui-fts by running "python cloudtui-fts.py" and then following the instruction provided by our tool.
 
-5. If you have connecting problem, try to add a line into your /etc/hosts file (superuser permissio required) by adding the IP of the controller followed by "controller" word:
+5. If you have connecting problem, try to add a line into your /etc/hosts file (superuser permissio required) by adding the IP of the controller followed by "ctl" word:
 <Controller_IP> ctl
 
 For support or any comment: massimo.canonico@uniupo.it
