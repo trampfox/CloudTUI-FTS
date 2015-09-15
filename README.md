@@ -29,7 +29,7 @@ free available under GPL v.3 license.
 
 ### Quick start:
 
-0. Requirements
+0. Requirements  
 	You need an up and running OpenStack installation. We are planning
 	to provide support even for other Cloud Platform in the next future.
 	If you do have enough resource to run your own OpenStack installation
