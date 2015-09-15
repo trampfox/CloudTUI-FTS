@@ -38,7 +38,7 @@ free available under GPL v.3 license.
 	experiment.
 1. Install the required libraries
   1. boto (the following command should work on most 
-			of the linux distos:
+			of the linux distributions:
 	 		"sudo pip install boto")
   2. python-novaclient ("sudo pip install pythom-novaclient")
   3. python-ceilometerclient ("sudo pip install python-ceilometerclient")
