@@ -366,7 +366,7 @@ class OpenstackManager:
         elif choice in no:
           return False
       else:
-        sys.stdout.write("Please respond with 'yes' or 'no'")
+        print("Please respond with 'yes' or 'no'")
 
     def manage_floating_ip(self):
 
