@@ -529,7 +529,7 @@ class OpenstackManager:
             logging.info("Monitor agents have been stopped")
 
     def show_menu(self):
-      menu_text = """\n******************** CloudTUI-FTS ********************\n
+        menu_text = """\n******************** CloudTUI-FTS ********************\n
 What would you like to do?
 --------------------------
 1) Create new instance
