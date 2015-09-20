@@ -1,15 +1,14 @@
-from Queue import Queue
+__author__ = 'Davide Monfrecola'
+__maintainer__ = 'Stefano Garione'
+
 import logging
-from threading import Thread
 import time
 
 from managers.openstack.openstackagent import OpenstackAgent
 from monitors.openstackmonitor import OpenstackMonitor
 from rules.ruleengine import RuleEngine
-
-
-__author__ = 'Davide Monfrecola'
-
+from Queue import Queue
+from threading import Thread
 from confmanager.openstackconfmanager import OpenstackConfManager
 from novaclient.client import Client
 
@@ -23,6 +22,7 @@ class OpenstackManager:
         self.keys = None
         self.security_groups = None
         self.networks = None
+        self.floatingi_list = None
         self.instances = None
         self.os_monitor = None
         self.rule_engine_monitor = None
@@ -36,7 +36,6 @@ class OpenstackManager:
 
     def connect(self):
         """Connection to the endpoint specified in the configuration file"""
-        # OpenStack Python SDK #
         try:
             self.nova = Client(2,
                                self.conf.username,
@@ -51,68 +50,102 @@ class OpenstackManager:
         # end OpenStack Python SDK #
 
     def create_new_instance(self):
+        try:
+            # image
+            self.print_all_images()
+            if len(self.images) > 0:
+                image_index = input("Select image: \n> ")
+                self.image = self.get_input(type='image', index=image_index)
+            else:
+                print("There are no images available!")
+                return False
+            #flavor
+            self.print_all_instance_types()
+            if len(self.instance_types) > 0:
+                instance_index = input("Select instance type: ")
+                self.instance_type = self.get_input(type='instance_type', index=instance_index)
+            else:
+                print("There are no instance types available!")
+                return False
+            # security groups
+            self.print_all_security_groups()
+            if len(self.security_groups) > 0:
+                security_group_index = input("Select security group: ")
+                self.security_group = self.get_input(type='security_group', index=security_group_index)
+            else:
+                print("There are no security groups available!")
+                return False
+            # key name
+            self.print_all_networks()
+            if len(self.networks) > 0:
+                network_index = input("Select network: ")
+                network_info = self.get_input(type='network', index=network_index)
+                self.network = network_info[0]
+                self.network_id = network_info[1]
+            else:
+                print("There are no networks available!")
+                return False
+            # network
+            self.print_all_key_pairs()
+            if len(self.keys) > 0:
+                key_index = input("Select key: ")
+                self.key_name = self.get_input(type='key_name', index=key_index)
+            else:
+                print("There are no keys available!")
+                return False
 
-        # image
-        self.print_all_images()
-        if len(self.images) > 0:
-            image_index = input("Select image: ")
-            self.image = self.images[image_index - 1]._info['name']
-        else:
-            print("There are no images available!")
-            return False
-        #flavor
-        self.print_all_instance_types()
-        if len(self.instance_types) > 0:
-            instance_index = input("Select instance type: ")
-            self.instance_type = self.instance_types[instance_index - 1]._info['name']
-        else:
-            print("There are no instance types available!")
-            return False
-        # security groups
-        self.print_all_security_groups()
-        if len(self.security_groups) > 0:
-            security_group_index = input("Select security group: ")
-            self.security_group = self.security_groups[security_group_index - 1].name
-        else:
-            print("There are no security groups available!")
-            return False
-        # key name
-        self.print_all_networks()
-        if len(self.networks) > 0:
-            key_index = input("Select network: ")
-            self.network = self.networks[key_index - 1].label
-            self.network_id = self.networks[key_index - 1].id
-        else:
-            print("There are no networks available!")
-            return False
-        # network
-        self.print_all_key_pairs()
-        if len(self.keys) > 0:
-            key_index = input("Select key: ")
-            self.key_name = self.keys[key_index - 1]._info['keypair']['name']
-        else:
-            print("There are no keys available!")
+            server_name = raw_input("Insert instance name: ")
+
+            while len(server_name) == 0:
+                print("\nInstance name is mandatory.\n")
+                server_name = raw_input("Insert instance name: ")
+
+            print("\n--- Creating new instance with the following properties:")
+            print("- %-20s %-30s" % ("Image name", str(self.image)))
+            print("- %-20s %-30s" % ("Instance type", str(self.instance_type)))
+            print("- %-20s %-30s" % ("Security group", str(self.security_group)))
+            print("- %-20s %-30s" % ("Key pair", str(self.key_name)))
+            print("- %-20s %-30s" % ("Network", str(self.network)))
+
+            image = self.nova.images.find(name=self.image)
+            flavor = self.nova.flavors.find(name=self.instance_type)
+            nics = [{"net-id": self.network_id}]
+
+            instance = self.nova.servers.create(name=server_name,
+                                                image=image,
+                                                flavor=flavor,
+                                                key_name=self.key_name,
+                                                security_groups=[self.security_group],
+                                                nics=nics)
+        except AbortOperationException:
+            print("Operation aborted\n\n")
             return False
 
-        server_name = raw_input("Insert instance name: ")
+    def get_input(self, type, index):
+        while True:
+            try:
+                selected = self.get_requested_type(type, index)
+                return selected
+            except IndexError:
+                index = input("Bad input, please try again or press 0 to abort: \n> ")
+                if index is 0:
+                  raise AbortOperationException
 
-        print("\n--- Creating new instance with the following properties:")
-        print("- %-20s %-30s" % ("Image name", str(self.image)))
-        print("- %-20s %-30s" % ("Instance type", str(self.instance_type)))
-        print("- %-20s %-30s" % ("Security group", str(self.security_group)))
-        print("- %-20s %-30s" % ("Key pair", str(self.key_name)))
-        print("- %-20s %-30s" % ("Network", str(self.network)))
 
-        image = self.nova.images.find(name=self.image)
-        flavor = self.nova.flavors.find(name=self.instance_type)
-        nics = [{"net-id": self.network_id}]
+    def get_requested_type(self, type, index):
+        if type == 'image':
+            return self.images[index - 1]._info['name']
+        elif type == 'instance_type':
+            return self.instance_types[index - 1]._info['name']
+        elif type == 'security_group':
+            return self.security_groups[index - 1].name
+        elif type == 'network':
+            return (self.networks[index - 1].label, self.networks[index - 1].id)
+        elif type == 'key_name':
+            return self.keys[index - 1]._info['keypair']['name']
+        else:
+            return None
 
-        instance = self.nova.servers.create(name=server_name,
-                                            image=image,
-                                            flavor=flavor,
-                                            key_name=self.key_name,
-                                            security_groups=[self.security_group],
-                                            nics=nics)
 
     def instance_action(self, action):
         try:
@@ -390,3 +423,6 @@ class OpenstackManager:
                 raise Exception("Unavailable choice!")
         except Exception as e:
             print(e.message)
+
+class AbortOperationException(Exception):
+  pass
