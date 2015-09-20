@@ -22,7 +22,7 @@ class CloudTUI:
     def show_menu(self):
         global kill
 
-        print("CloudTUI-fts")
+        print("******************** CloudTUI-FTS ********************\n")
         print("Please select the Cloud platform that you want to use:")
 
         print("1) OpenStack")

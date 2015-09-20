@@ -7,7 +7,7 @@ class ConfManager():
 
     def __init__(self, platform):
         """Initialize parser object"""
-        print('Create ConfManager platform: ' + platform)
+        print('Configuring CloudTUI components...')
         self.__platform = platform
         self.parser = SafeConfigParser()
         self.parser.read('conf/' + self.__platform + '/login.conf')

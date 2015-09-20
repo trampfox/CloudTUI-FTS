@@ -41,7 +41,7 @@ class RuleEngine():
 
     def read_policies(self):
         self.my_intellect.learn(Intellect.local_file_uri("intellect/policies/openstack.policy"))
-        logging.info("Openstack policy loaded")
+        logging.info("OpenStack policy loaded")
         # TEST
         # TODO gestione agenda groups
         self.agenda_groups.append("cpu")

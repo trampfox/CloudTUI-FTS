@@ -3,14 +3,16 @@ __maintainer__ = 'Stefano Garione'
 
 import logging
 import time
+from Queue import Queue
+from threading import Thread
+
+from novaclient.client import Client
 
 from managers.openstack.openstackagent import OpenstackAgent
 from monitors.openstackmonitor import OpenstackMonitor
 from rules.ruleengine import RuleEngine
-from Queue import Queue
-from threading import Thread
 from confmanager.openstackconfmanager import OpenstackConfManager
-from novaclient.client import Client
+
 
 class OpenstackManager:
 
@@ -30,6 +32,7 @@ class OpenstackManager:
         self.os_monitor = None
         self.instances_cloned_time = {}
         self.cloned_instances = {}
+        print("OpenStack CloudTUI components configured.")
 
     def get_conf(self):
         return self.conf
@@ -43,7 +46,7 @@ class OpenstackManager:
                                self.conf.tenant_name,
                                self.conf.auth_url)
 
-            logging.debug("Client instance successfully created")
+            logging.debug("OpenStack client instance successfully created")
         except Exception as e:
             logging.error("Connection error({0})".format(e.message))
 
@@ -317,13 +320,151 @@ class OpenstackManager:
         """
         print("--- Networks available ---")
         print("%-10s %-25s %-35s" % ("ID", "Network name", "Description"))
+
         if self.networks is None:
             self.networks = self.nova.networks.list()
+
         i = 1
         print(self.networks[0])
+
         for network in self.networks:
             print("%-10s %-25s %-30s" % (i, network.label, network.id))
             i = i + 1
+
+    def print_floating_ip(self):
+      """
+      Print ip and other useful information of all floating ip available
+      """
+      print("--- Floating Ips available ---")
+      print("%-10s %-25s %-35s" % ("ID", "PublicIp", "AssociatedPrivateIp"))
+
+      if self.floatingip_list is None:
+        self.floatingip_list = self.nova.floating_ips.list()
+
+      free = False
+      i = 1
+
+      for floating_ips in self.floatingip_list:
+        if floating_ips.fixed_ip is None:
+          free = True
+        print("%-10s %-25s %-35s" % (i, floating_ips.ip, floating_ips.fixed_ip))
+        i = i + 1
+
+      return free
+
+    def check_choice(self, str_prompt):
+      yes = set(['yes', 'y', 'ye', ''])
+      no = set(['no', 'n'])
+
+      print(str_prompt)
+
+      choice = raw_input("(Yes/No)").lower()
+
+      if choice.isalpha():
+        if choice in yes:
+          return True
+        elif choice in no:
+          return False
+      else:
+        sys.stdout.write("Please respond with 'yes' or 'no'")
+
+    def manage_floating_ip(self):
+
+      self.floatingip_list = self.nova.floating_ips.list()
+      no_ips = self.print_floating_ip()
+
+      if no_ips is False:
+
+        choice = self.check_choice("Would you instantiate a new Public Ip?")
+
+        if choice is True:
+          self.create_ips()
+          self.floatingip_list = None
+        elif choice is False:
+          if len(self.floatingip_list) > 0:
+            choice2 = self.check_choice("\nWould you Release a Public Ip?")
+            if choice2 is True:
+              self.release_ips()
+      else:
+
+        choice = self.check_choice("\nWould you Associate a Public Ip to an Instance?")
+
+        if choice is True:
+          self.associate_ips()
+
+        elif choice is False:
+          choice2 = self.check_choice("\nWould you Release a Public Ip?")
+          if choice2 is True:
+            self.release_ips()
+          elif choice2 is False:
+            pass
+
+    def release_ips(self):
+      self.print_floating_ip()
+      if len(self.floatingip_list) > 0:
+        ip_index = input("Select the ip to release: ")
+        while True:
+          try:
+            self.ip_relased_id = self.floatingip_list[ip_index - 1].id
+            break
+          except IndexError:
+            ip_index = input("Try Again...Select Ip: ")
+        if self.floatingip_list[ip_index - 1].fixed_ip is not None:
+          print ("Warning: Address in Use")
+          choice3 = self.check_choice("\nWould you Continue?")
+          if choice3 is False:
+            return False
+        self.nova.floating_ips.delete(self.ip_relased_id)
+        print ("Address released")
+
+    def associate_ips(self):
+      for floating_ips in self.floatingip_list:
+        if floating_ips.fixed_ip is None:
+          free_ip = floating_ips
+          break
+      try:
+        self.print_all_instances()
+        if len(self.instances) == 0:
+          print("You don't have any instance running or pending")
+          return False
+        else:
+          instance_index = input("Please select the instance: ")
+          while True:
+            try:
+              instace_choosen = self.instances[instance_index - 1]
+              break
+            except IndexError:
+              instance_index = input("Please re-select the instance: ")
+      except Exception as e:
+        print("An error occured: {0}".format(e.message))
+
+      self.nova.servers.add_floating_ip(instace_choosen, free_ip)
+      print ("Public IP associated")
+
+    def create_ips(self):
+      try:
+        self.network_id = self.floatingip_list[0].pool
+      except IndexError:
+        self.print_all_networks()
+        if len(self.networks) > 0:
+          net_index = input("Select the public network: ")
+          while True:
+            try:
+              self.network = self.networks[net_index - 1].label
+              self.network_id = self.networks[net_index - 1].id
+              break
+            except IndexError:
+              net_index = input("No valid Input\n Select the public network again (0 for exit): ")
+              if net_index is 0:
+                print ("returning to Main Menu'...")
+                return False
+        else:
+          print("There are no networks available!")
+          return False
+
+      self.nova.floating_ips.create(self.network_id)
+      print ("Floating Ip created")
+
 
     def monitor_status(self):
         if self.os_monitor is not None:
@@ -345,12 +486,12 @@ class OpenstackManager:
             self.os_monitor = None
             self.rule_engine_monitor = None
             self.os_agent = None
-            print("\n\033[94mOpenstack monitor agent has been stopped\033[0m\n")
+            print("\n\033[94mOpenStack monitor agent has been stopped\033[0m\n")
         else:
             logging.debug("Monitor not enabled, starting threads")
-            print("\nStarting Openstack monitor...")
+            print("\nStarting OpenStack monitor...")
             self.start_monitor()
-            print("\n\033[92mOpenstack monitor has been started\033[0m\n")
+            print("\n\033[92mOpenStack monitor has been started\033[0m\n")
 
     def start_monitor(self):
         meters_queue = Queue()
@@ -361,7 +502,7 @@ class OpenstackManager:
         monitor = Thread(target=self.os_monitor.run, args=(meters_queue,))
         monitor.setDaemon(True)
         monitor.start()
-        logging.info("OpenstackMonitor thread started")
+        logging.info("OpenStack Monitor thread started")
 
         self.rule_engine_monitor = RuleEngine(resources=resources, cmd_queue=cmd_queue)
         rule_engine_thread = Thread(target=self.rule_engine_monitor.run, args=(meters_queue,))
@@ -373,7 +514,7 @@ class OpenstackManager:
         os_agent_thread = Thread(target=self.os_agent.run, args=(cmd_queue,))
         os_agent_thread.setDaemon(True)
         os_agent_thread.start()
-        logging.info("OpenstackAgent thread started")
+        logging.info("OpenStack Agent thread started")
         # cmd_queue.put({'command': 'stop'})
 
     def stop_monitor(self):

@@ -2,16 +2,12 @@
 
 __author__ = 'Davide Monfrecola'
 
-import datetime
-import monitoringutils
 import time
-import ceilometerclient.client
 import logging
 
-from random import randint
-from sqlitemanager import SqliteConnector
+import ceilometerclient.client
+
 from monitor import Monitor
-from confmanager.openstackconfmanager import OpenstackConfManager
 
 
 class OpenstackMonitor(Monitor):
@@ -42,7 +38,7 @@ class OpenstackMonitor(Monitor):
             logging.info("Monitor thread started")
 
             for resource in self.resources:
-                logging.debug("[OpenstackMonitor] Check resource {0}".format(str(resource["id"])))
+              logging.debug("[OpenStack Monitor] Check resource {0}".format(str(resource["id"])))
                 # insert [resource id, value] list into the meters list
                 samples = self.get_samples(resource_id=resource["id"], limit=1)
                 #### TEST values ####
