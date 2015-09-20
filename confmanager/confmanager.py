@@ -15,7 +15,6 @@ class ConfManager():
     def read(self):
         """Read configuration file"""
         self.read_options()
-        #self.read_monitor_data()
 
     def read_login_data(self):
         """Read login data from login.txt file"""
@@ -29,5 +28,9 @@ class ConfManager():
 
     def read_options(self):
         """Read options values from [option] section"""
-        #self.validate_certs = self.parser.get('options', 'validate_certs')
-        #self.terminal = self.parser.get('options', 'terminal')
+        if (self.parser.has_option('options', 'validate_certs')):
+          self.validate_certs = self.parser.get('options', 'validate_certs')
+        if (self.parser.has_option('options', 'terminal')):
+          self.terminal = self.parser.get('options', 'terminal')
+        else:
+          self.terminal = "default"
