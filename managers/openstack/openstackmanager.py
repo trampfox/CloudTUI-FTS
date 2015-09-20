@@ -470,7 +470,6 @@ class OpenstackManager:
         if self.os_monitor is not None:
             print("\n\n\033[92mMonitor enabled\033[0m\n\n")
             self.print_monitored_instances()
-            self.print_active_rules()
         else:
             print("\n\n\033[93mMonitor not enabled\033[0m\n\n")
 
@@ -478,7 +477,11 @@ class OpenstackManager:
         pass
 
     def print_active_rules(self):
-      self.rule_engine_monitor.print_policies()
+      if self.os_monitor is not None:
+        self.rule_engine_monitor.print_policies()
+      else:
+        print("\n\033[93mMonitor not enabled\033[0m")
+        print("\033[93mNo active policies has been found\033[0m\n")
 
     def start_stop_monitor(self):
         if self.os_monitor is not None:
@@ -535,7 +538,9 @@ class OpenstackManager:
 5) Retrieve diagnostic
 6) Start/stop monitor
 7) Monitor status
-8) Exit
+8) Show policies
+9) Manage floating IP
+10) Exit
 \n"""
         print(menu_text)
 
@@ -558,6 +563,10 @@ class OpenstackManager:
             elif choice == 7:
                 self.monitor_status()
             elif choice == 8:
+              self.print_active_rules()
+            elif choice == 9:
+              self.manage_floating_ip()
+            elif choice == 10:
                 self.stop_monitor()
                 exit(0)
             else:

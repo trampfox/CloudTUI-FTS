@@ -78,9 +78,6 @@ class RuleEngine():
         self.set_stop_signal()
 
     def print_policies(self):
-      # for importStmt in  self.my_intellect.policy.importStmts:
-      # print importStmt
-
       print "\033[1m\033[4mActive rules\033[0m"
 
       for ruleStmt in self.my_intellect.policy.ruleStmts:
@@ -103,6 +100,3 @@ class RuleEngine():
 
         print "-" * 80
         print "\n"
-
-        # for attributeStmt in self.my_intellect.policy.attributeStmts:
-        #   print attributeStmt
