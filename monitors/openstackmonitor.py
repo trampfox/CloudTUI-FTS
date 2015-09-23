@@ -38,7 +38,7 @@ class OpenstackMonitor(Monitor):
             logging.info("Monitor thread started")
 
             for resource in self.resources:
-              logging.debug("[OpenStack Monitor] Check resource {0}".format(str(resource["id"])))
+                logging.debug("[OpenStack Monitor] Check resource {0}".format(str(resource["id"])))
                 # insert [resource id, value] list into the meters list
                 samples = self.get_samples(resource_id=resource["id"], limit=1)
                 #### TEST values ####
