@@ -1,5 +1,0 @@
-{
-    "Nimbus": "NimbusManager",
-    "Eucalyptus": "EucalyptusManager",
-    "OpenStack": "OpenstackManager"
-}
